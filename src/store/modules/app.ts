@@ -1,36 +1,71 @@
-export interface AppState {
-  defaultNgwMap: string;
+import Vuex from 'vuex';
+import { DefineActions, DefineGetters, DefineMutations } from 'vuex-type-helper';
+import { WebGis } from './WebGis';
+import router from '../../routers';
+
+export interface State {
+  name: string;
+  webGis?: WebGis;
 }
 
-const _state: AppState = {
-  defaultNgwMap: 'ngw-leaflet',
+export interface Getters {
+  name: string;
+}
+
+export interface Mutations {
+  name: {
+    name: string;
+  };
+  webGis: WebGis;
+}
+
+export interface Actions {
+  name: {
+    name: string;
+  };
+  webGis: WebGis;
+}
+
+const _state: State = {
+  name: 'World',
+  webGis: undefined
 };
 
-// getters
-const _getters = {};
+const _getters: DefineGetters<Getters, State> = {
+  name: (state) => state.name
+};
 
-// actions
-const actions = {
-
-  setDefaultNgwMap({commit}: any, ngwMap: string) {
-    commit('setDefaultNgwMap', ngwMap);
+const _mutations: DefineMutations<Mutations, State> = {
+  name(state, { name }) {
+    state.name = name;
   },
 
+  webGis(state, webGis) {
+    state.webGis = webGis;
+  }
 };
 
-// mutations
-const mutations = {
-
-  setDefaultNgwMap(state: AppState, ngwMap: string) {
-    state.defaultNgwMap = ngwMap;
+const _actions: DefineActions<Actions, State, Mutations, Getters> = {
+  name({ commit }, payload) {
+    commit('name', payload);
   },
-
+  webGis({commit}, webGis) {
+    commit('webGis', webGis);
+    router.push('/');
+  }
 };
+
+export const {
+  mapState,
+  mapGetters,
+  mapMutations,
+  mapActions
+} = Vuex.createNamespacedHelpers<State, Getters, Mutations, Actions>('app');
 
 export default {
   namespaced: true,
   state: _state,
   getters: _getters,
-  actions,
-  mutations
+  mutations: _mutations,
+  actions: _actions
 };

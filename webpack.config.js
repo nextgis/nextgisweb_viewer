@@ -72,7 +72,8 @@ module.exports = (env, argv) => {
       files: ['./src/**/*.ts']
     }),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(argv.mode || 'development')
+      'process.env.NODE_ENV': JSON.stringify(argv.mode || 'development'),
+      'process.env.BASE_URL': JSON.stringify('./src')
     }),
     new VuetifyLoaderPlugin(),
   ];

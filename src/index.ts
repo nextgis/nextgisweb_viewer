@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import store from './store';
-import { router } from './routers';
-import App from './App.vue';
+import router from './routers';
+import App from './App/App.vue';
 import VueRouter from 'vue-router';
 // @ts-ignore
 import Vuetify from 'vuetify/lib';

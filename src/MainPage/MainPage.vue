@@ -33,14 +33,14 @@
     <v-toolbar :clipped-left="$vuetify.breakpoint.lgAndUp" color="#e5eef7" app fixed>
       <v-toolbar-title class="ml-0 pl-0">
         <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-        <router-link to="/"><logo></logo></router-link>
+        <!-- <router-link to="/"><logo></logo></router-link> -->
 
       </v-toolbar-title>
       <span class="title ml-3">NGW Viewer</span>
       <v-spacer></v-spacer>
-      <v-btn icon large href="https://github.com/nextgis/nextgisweb_frontend" target="_blank">
+      <!-- <v-btn icon large href="https://github.com/nextgis/nextgisweb_frontend" target="_blank">
         <v-icon large>mdi-github-circle</v-icon>
-      </v-btn>
+      </v-btn> -->
     </v-toolbar>
     <v-content>
 
