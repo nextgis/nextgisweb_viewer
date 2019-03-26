@@ -4,9 +4,14 @@ const TSLintPlugin = require('tslint-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const utils = require('./build/utils');
 const VuetifyLoaderPlugin = require('vuetify-loader/lib/plugin');
-const { getAliases } = require('./nextgisweb_frontend/build/aliases');
 
-const alias = getAliases();
+let alias = {};
+try {
+  const { getAliases } = require('./nextgisweb_frontend/build/aliases');
+  alias = getAliases();
+} catch (er) {
+  // ignore
+}
 
 // const CompressionPlugin = require('compression-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -41,6 +46,16 @@ module.exports = (env, argv) => {
       options: {
         name: '[name].[ext]?[hash]'
       }
+    },
+    {
+      test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+      use: [{
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]',
+          outputPath: 'fonts/'
+        }
+      }]
     }
   ].concat(utils.styleLoaders({
     sourceMap: true,
@@ -50,7 +65,7 @@ module.exports = (env, argv) => {
   let plugins = [
     new VueLoaderPlugin(),
     new HtmlWebpackPlugin({
-      template: 'index.html',
+      template: 'src/index.html',
       filename: 'index.html'
     }),
     new TSLintPlugin({
@@ -85,9 +100,11 @@ module.exports = (env, argv) => {
 
     resolve: {
       extensions: ['.ts', '.js', '.vue', '.json'],
-      alias: {...alias, ...{
-        'vue$': 'vue/dist/vue.esm.js'
-      }},
+      alias: {
+        ...alias, ...{
+          'vue$': 'vue/dist/vue.esm.js'
+        }
+      },
     },
     module: {
       rules

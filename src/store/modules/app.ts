@@ -12,7 +12,7 @@ const _getters = {};
 // actions
 const actions = {
 
-  setDefaultNgwMap({commit}, ngwMap: string) {
+  setDefaultNgwMap({commit}: any, ngwMap: string) {
     commit('setDefaultNgwMap', ngwMap);
   },
 
