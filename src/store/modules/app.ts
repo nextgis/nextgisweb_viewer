@@ -2,43 +2,33 @@ import Vuex from 'vuex';
 import { DefineActions, DefineGetters, DefineMutations } from 'vuex-type-helper';
 import { WebGis } from './WebGis';
 import router from '../../routers';
+import NgwConnector from '@nextgis/ngw-connector';
 
 export interface State {
-  name: string;
   webGis?: WebGis;
 }
 
 export interface Getters {
-  name: string;
+  webGis: WebGis | undefined;
 }
 
 export interface Mutations {
-  name: {
-    name: string;
-  };
   webGis: WebGis;
 }
 
 export interface Actions {
-  name: {
-    name: string;
-  };
   webGis: WebGis;
 }
 
 const _state: State = {
-  name: 'World',
   webGis: undefined
 };
 
 const _getters: DefineGetters<Getters, State> = {
-  name: (state) => state.name
+  webGis: (state) => state.webGis
 };
 
 const _mutations: DefineMutations<Mutations, State> = {
-  name(state, { name }) {
-    state.name = name;
-  },
 
   webGis(state, webGis) {
     state.webGis = webGis;
@@ -46,11 +36,18 @@ const _mutations: DefineMutations<Mutations, State> = {
 };
 
 const _actions: DefineActions<Actions, State, Mutations, Getters> = {
-  name({ commit }, payload) {
-    commit('name', payload);
-  },
-  webGis({commit}, webGis) {
-    commit('webGis', webGis);
+  async webGis({ commit }, webGis) {
+    const connector = new NgwConnector({
+      baseUrl: webGis.url,
+      auth: webGis.auth
+    });
+    const resources = await connector.get('resource.collection', null, { parent: 0 });
+    const existWebGis: WebGis = {
+      ...webGis,
+      connector,
+      resources
+    };
+    commit('webGis', existWebGis);
     router.push('/');
   }
 };
