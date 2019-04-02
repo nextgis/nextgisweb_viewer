@@ -30,7 +30,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.json", "MainPage/MainPage.ts"
+    "src/**/*.json"
   ],
   "exclude": [
     "node_modules",

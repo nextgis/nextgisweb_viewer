@@ -4,6 +4,7 @@
     <v-navigation-drawer
       :clipped="$vuetify.breakpoint.lgAndUp"
       :open="open"
+      :load-children="loadChildren"
       v-model="drawer"
       dark
       style="background:#0070c5"
@@ -12,6 +13,7 @@
     >
       <v-treeview
         v-if="items"
+        :load-children="fetch"
         :active.sync="active"
         :items="items"
         :open="open"
@@ -20,6 +22,8 @@
         transition
         @update:open="onOpen"
         class="pt-3 pb-3"
+        expand-icon="mdi-chevron-down"
+        loading-icon="mdi-loading"
       >
         <template slot="prepend" slot-scope="{ item }">
           <v-icon v-if="item.icon">{{item.icon}}</v-icon>
@@ -43,7 +47,7 @@
       </v-btn> -->
     </v-toolbar>
     <v-content>
-
+      <div id="map"></div>
     </v-content>
   </div>
 </template>
@@ -83,22 +87,12 @@ export { MainPage as default } from './MainPage';
       z-index: 40;
   }
 
-  .main-page {
-    font-weight: bold;
-  }
-
   .nowrap {
     white-space: nowrap!important;
   }
 
-  code {
-    white-space: pre-wrap!important;
-    font-size: 90%!important;
-    line-height: 1.5em!important;
-    background: rgba(31,51,73,.05)!important;
-    border-radius: 3px!important;
-    padding: 2px 4px!important;
-    color: #5b7897!important;
-    box-shadow: none!important;
-}
+  #map {
+    width: 100%;
+    height: 100%;
+  }
 </style>
