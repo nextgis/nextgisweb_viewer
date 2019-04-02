@@ -3,16 +3,13 @@ import { Vue, Component, Watch } from 'vue-property-decorator';
 import { State, Action } from 'vuex-class';
 import NgwMap from '@nextgis/ngw-map';
 
-import MapAdapter from '@nextgis/leaflet-map-adapter';
-import 'leaflet/dist/leaflet.css';
-
 import { WebGis } from 'src/store/modules/WebGis';
 import { ViewerResource } from 'src/store/modules/ResourceItem';
 import { ResourceCls } from 'nextgisweb_frontend/packages/ngw-connector/src';
 
 const namespace: string = 'app';
 
-interface TreeItem {
+export interface TreeItem {
   id: number;
   name: string;
   children?: TreeItem[];
@@ -25,21 +22,14 @@ const clsIconAliases: { [key in ResourceCls]?: string } = {
   webmap: 'mdi-layers',
   resource_group: 'mdi-folder',
   vector_layer: 'mdi-vector-square',
+  raster_layer: 'mdi-image',
   mapserver_style: 'mdi-palette-swatch',
   qgis_vector_style: 'mdi-palette-swatch',
   raster_style: 'mdi-palette-swatch',
   basemap_layer: 'mdi-map',
-  raster_layer: 'mdi-image'
 };
 
-type Adapter = 'GEOJSON' | 'NGW';
-
-const allowedResources: { [key in ResourceCls]?: Adapter } = {
-  vector_layer: 'GEOJSON',
-  mapserver_style: 'NGW',
-  qgis_vector_style: 'NGW',
-  raster_style: 'NGW'
-};
+const blockedTreeCls: ResourceCls[] = ['webmap', 'vector_layer', 'raster_layer'];
 
 @Component
 export class MainPage extends Vue {
@@ -51,8 +41,6 @@ export class MainPage extends Vue {
   open: string[] = [];
 
   drawer = null;
-
-  ngwMap?: NgwMap;
 
   get items(): TreeItem[] {
     if (this.webGis) {
@@ -66,14 +54,15 @@ export class MainPage extends Vue {
     return [];
   }
 
-  mounted() {
-    this.ngwMap = new NgwMap(new MapAdapter(), {
-      target: 'map',
-      bounds: [0, -90, 180, 90],
-      qmsId: [487, 'baselayer'],
-    });
+  @Watch('active')
+  onActiveChange() {
+    const active = this.active[0];
+    if (active) {
+      this.$router.push({ path: `/${active}/view`});
+    } else {
+      this.$router.push({ path: `/`});
+    }
   }
-
 
   getChildren(resource: ViewerResource) {
     const children = resource._children ? resource._children : [];
@@ -97,11 +86,8 @@ export class MainPage extends Vue {
       cls: r.cls,
       icon: clsIconAliases[r.cls]
     };
-    if (r.children) {
+    if (r.children && blockedTreeCls.indexOf(r.cls) === -1) {
       item.children = this.getChildren(r);
-    }
-    if (allowedResources[r.cls]) {
-      item.forMap = true;
     }
     return item;
   }

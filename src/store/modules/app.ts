@@ -18,6 +18,7 @@ interface TreeItemChildrenpdateOptions {
 
 export interface Getters {
   webGis: WebGis | undefined;
+  resourceById: (id: number) => ViewerResource | undefined;
 }
 
 export interface Mutations {
@@ -35,7 +36,15 @@ const _state: State = {
 };
 
 const _getters: DefineGetters<Getters, State> = {
-  webGis: (state) => state.webGis
+  webGis: (state) => state.webGis,
+
+  resourceById: (state) => (id: number) => {
+    const webGis = state.webGis;
+    const resources = webGis && webGis.resources;
+    if (resources) {
+      return findResource(resources, id);
+    }
+  }
 };
 
 const _mutations: DefineMutations<Mutations, State> = {

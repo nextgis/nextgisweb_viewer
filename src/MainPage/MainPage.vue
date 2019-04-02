@@ -29,8 +29,6 @@
           <span><v-icon v-if="item.icon">{{item.icon}}</v-icon></span>
         </template>
         <template slot="label" slot-scope="{ item }">
-          <!-- <span>{{item.cls}}</span> -->
-
           <span>{{item.name}}</span>
         </template>
       </v-treeview>
@@ -50,7 +48,7 @@
     </v-toolbar>
 
     <v-content>
-      <div id="map"></div>
+      <router-view></router-view>
     </v-content>
 
   </v-app>
