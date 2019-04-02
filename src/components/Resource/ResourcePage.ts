@@ -9,6 +9,7 @@ import 'leaflet/dist/leaflet.css';
 
 import { ViewerResource } from '../../store/modules/ResourceItem';
 import { WebGis } from '../../store/modules/WebGis';
+import { WebMapLayerAdapter, WebMapAdapterOptions } from '@nextgis/ngw-kit';
 
 const namespace: string = 'app';
 
@@ -79,9 +80,24 @@ export class ResourcePage extends Vue {
         layer = await this.ngwMap.addNgwLayer({
           resourceId: resource.id
         });
+      } else if (resource.cls === 'webmap') {
+        layer = await this.ngwMap.addLayer<'WEBMAP', WebMapAdapterOptions>(WebMapLayerAdapter, {
+          webMap: this.ngwMap,
+          resourceId: resource.id,
+          baseUrl: this.webGis.url,
+          connector: this.webGis.connector!
+        });
+
       }
       if (layer) {
-        this.ngwMap.zoomToLayer(layer);
+        if (layer.getExtent) {
+          const extent = await layer.getExtent();
+          if (extent) {
+            this.ngwMap.fitBounds(extent);
+          }
+        } else {
+          this.ngwMap.zoomToLayer(layer);
+        }
       }
       this.isLoading = false;
     }
@@ -95,21 +111,19 @@ export class ResourcePage extends Vue {
       const resourcesWithStyles: ResourceCls[] = ['raster_layer', 'vector_layer'];
       if (resourcesWithStyles.indexOf(resource.cls) !== -1) {
         const children = resource._children;
-
         if (children && children.length > 0) {
-          if (!(resource.cls === 'raster_layer' && children.length === 1)) {
-            this.styles = [...children];
-          }
+          this.styles = [...children];
           if (resource.cls === 'vector_layer') {
             this.styles.push(resource);
           }
         } else {
           this.styles.push(resource);
         }
-        if (this.styles.length) {
-          this.layerResourceId = this.styles[0].id;
-        }
-        this.showLayer();
+      } else {
+        this.styles.push(resource);
+      }
+      if (this.styles.length) {
+        this.layerResourceId = this.styles[0].id;
       }
     }
   }
