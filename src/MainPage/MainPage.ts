@@ -8,19 +8,38 @@ import 'leaflet/dist/leaflet.css';
 
 import { WebGis } from 'src/store/modules/WebGis';
 import { ViewerResource } from 'src/store/modules/ResourceItem';
+import { ResourceCls } from 'nextgisweb_frontend/packages/ngw-connector/src';
 
 const namespace: string = 'app';
 
 interface TreeItem {
-  id: string;
+  id: number;
   name: string;
   children?: TreeItem[];
+  cls?: ResourceCls;
+  icon?: string;
+  forMap?: boolean;
 }
 
-export interface Item {
-  id: string;
-  name: string;
-}
+const clsIconAliases: { [key in ResourceCls]?: string } = {
+  webmap: 'mdi-layers',
+  resource_group: 'mdi-folder',
+  vector_layer: 'mdi-vector-square',
+  mapserver_style: 'mdi-palette-swatch',
+  qgis_vector_style: 'mdi-palette-swatch',
+  raster_style: 'mdi-palette-swatch',
+  basemap_layer: 'mdi-map',
+  raster_layer: 'mdi-image'
+};
+
+type Adapter = 'GEOJSON' | 'NGW';
+
+const allowedResources: { [key in ResourceCls]?: Adapter } = {
+  vector_layer: 'GEOJSON',
+  mapserver_style: 'NGW',
+  qgis_vector_style: 'NGW',
+  raster_style: 'NGW'
+};
 
 @Component
 export class MainPage extends Vue {
@@ -35,7 +54,7 @@ export class MainPage extends Vue {
 
   ngwMap?: NgwMap;
 
-  get items(): Item[] {
+  get items(): TreeItem[] {
     if (this.webGis) {
       const resources = this.webGis.resources;
       if (resources) {
@@ -71,12 +90,18 @@ export class MainPage extends Vue {
 
   private _resourceToTreeItem(resource: ViewerResource) {
     const r = resource;
+
     const item: TreeItem = {
-      id: String(r.id),
+      id: r.id,
       name: String(r.display_name),
+      cls: r.cls,
+      icon: clsIconAliases[r.cls]
     };
     if (r.children) {
       item.children = this.getChildren(r);
+    }
+    if (allowedResources[r.cls]) {
+      item.forMap = true;
     }
     return item;
   }

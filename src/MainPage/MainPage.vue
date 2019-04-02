@@ -1,6 +1,6 @@
 <template>
-  <div>
-
+<div id="app">
+  <v-app id="inspire">
     <v-navigation-drawer
       :clipped="$vuetify.breakpoint.lgAndUp"
       :open="open"
@@ -26,9 +26,11 @@
         loading-icon="mdi-loading"
       >
         <template slot="prepend" slot-scope="{ item }">
-          <v-icon v-if="item.icon">{{item.icon}}</v-icon>
+          <span><v-icon v-if="item.icon">{{item.icon}}</v-icon></span>
         </template>
         <template slot="label" slot-scope="{ item }">
+          <!-- <span>{{item.cls}}</span> -->
+
           <span>{{item.name}}</span>
         </template>
       </v-treeview>
@@ -46,10 +48,13 @@
         <v-icon large>mdi-github-circle</v-icon>
       </v-btn> -->
     </v-toolbar>
+
     <v-content>
       <div id="map"></div>
     </v-content>
-  </div>
+
+  </v-app>
+</div>
 </template>
 
 <script lang="ts">

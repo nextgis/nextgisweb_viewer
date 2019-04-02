@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-export { App as default } from "./App";
+export { App as default } from './App';
 </script>
 
 
