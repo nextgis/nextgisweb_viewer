@@ -1,14 +1,15 @@
-import { Vue, Component, Watch } from 'vue-property-decorator';
-import { Getter, Action, State } from 'vuex-class';
-import { WebGis } from 'src/store/modules/WebGis';
+import { Vue, Component } from 'vue-property-decorator';
 
-const namespace: string = 'app';
+import { WebGis } from '../store/modules/WebGis';
+import { namespace } from 'vuex-class';
+
+export const { Action, Getter, State } = namespace('app');
 
 @Component<Login>({})
 export class Login extends Vue {
 
-  @State('webGis', { namespace }) webGis!: WebGis;
-  @Action('webGis', { namespace }) setWebGis!: (webGis: WebGis) => any;
+  @State webGis!: WebGis;
+  @Action setWebGis!: (webGis: WebGis) => any;
 
   guest = true;
 

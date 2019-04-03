@@ -6,6 +6,7 @@ import { ViewerResource } from './ResourceItem';
 import NgwConnector from '@nextgis/ngw-connector';
 import { findResource } from './utils';
 import Vue from 'vue';
+import { namespace } from 'vuex-class';
 
 export interface State {
   webGis?: WebGis;
@@ -27,7 +28,7 @@ export interface Mutations {
 }
 
 export interface Actions {
-  webGis: WebGis;
+  setWebGis: WebGis;
   loadChildren: number;
 }
 
@@ -66,7 +67,7 @@ const _mutations: DefineMutations<Mutations, State> = {
 };
 
 const _actions: DefineActions<Actions, State, Mutations, Getters> = {
-  async webGis({ commit }, webGis) {
+  async setWebGis({ commit }, webGis) {
     const connector = new NgwConnector({
       baseUrl: webGis.url,
       auth: webGis.auth
@@ -98,6 +99,7 @@ export const {
   mapMutations,
   mapActions
 } = Vuex.createNamespacedHelpers<State, Getters, Mutations, Actions>('app');
+
 
 export default {
   namespaced: true,
