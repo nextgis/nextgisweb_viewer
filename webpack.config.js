@@ -13,6 +13,8 @@ try {
   // ignore
 }
 
+const ASSET_PATH = process.env.ASSET_PATH || '/';
+
 // const CompressionPlugin = require('compression-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -97,6 +99,7 @@ module.exports = (env, argv) => {
 
     output: {
       filename: '[name]-[hash:7].js',
+      publicPath: ASSET_PATH
     },
 
     resolve: {

@@ -66,7 +66,7 @@ export class ResourcePage extends Vue {
     const resource = this.styles.find((x) => x.id === this.layerResourceId);
     if (resource && this.ngwMap) {
       this.isLoading = true;
-      this.ngwMap.removeLayers();
+      this.ngwMap.removeOverlays();
       let layer: LayerAdapter | undefined;
       if (resource.cls === 'vector_layer') {
         layer = await this.ngwMap.addNgwLayer({

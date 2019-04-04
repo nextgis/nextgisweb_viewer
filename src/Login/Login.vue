@@ -8,10 +8,13 @@
               <v-toolbar-title>Connext to WebGIS</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
+              <v-chip v-if="loginErrorMessage" label outline color="red">{{loginErrorMessage}}</v-chip>
+
               <v-form @submit="onGoBtnClick" onSubmit="return false;">
                 <v-text-field
                   v-model="url"
                   ref="url"
+                  name="url"
                   label="WebGIS URL"
                   type="text"
                   :rules="[rules.validUrl]"
@@ -19,10 +22,11 @@
 
                 <v-switch v-model="guest" label="As guest"></v-switch>
                 <div v-if="!guest">
-                  <v-text-field v-model="login" ref="login" label="Login" type="text"></v-text-field>
+                  <v-text-field v-model="login" ref="login" name="login" label="Login" type="text"></v-text-field>
                   <v-text-field
                     v-model="password"
                     ref="password"
+                    name="password"
                     label="Password"
                     id="password"
                     type="password"

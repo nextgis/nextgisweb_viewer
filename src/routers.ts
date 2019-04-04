@@ -9,7 +9,8 @@ import SearchPage from './components/Search/SearchPage.vue';
 const router = new VueRouter({
   mode: 'history',
   // @ts-ignore
-  // base: process.env.BASE_URL,
+  // base: process.env.BASE_URL || './',
+  base: './',
   routes: [
     {
       path: '/login',
