@@ -1,11 +1,15 @@
 
 import { ViewerResource } from './ResourceItem';
 import NgwConnector, { Credentials } from '@nextgis/ngw-connector';
+
+interface WebGisMeta {
+  systemName?: string;
+}
 export interface WebGis {
   url: string;
   auth: Credentials;
   id?: string;
-  meta?: any;
+  meta?: WebGisMeta;
   guest?: boolean;
   connector?: NgwConnector;
   resources?: ViewerResource[];

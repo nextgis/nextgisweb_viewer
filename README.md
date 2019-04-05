@@ -1,6 +1,6 @@
 # NextGIS WEB Viewer
 
-Service for viewing map resources from NextGIS WEB.
+[VIEWER](http://viewer.nextgis.com) - Service for viewing map resources from NextGIS WEB.
 
 ## Docker
 

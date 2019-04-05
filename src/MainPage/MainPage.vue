@@ -40,7 +40,7 @@
         <!-- <router-link to="/"><logo></logo></router-link> -->
 
       </v-toolbar-title>
-      <span class="title ml-3">{{webGis.id}}</span>
+      <span class="title ml-3">{{webGis.meta.systemName || webGis.id}}</span>
       <v-spacer></v-spacer>
       <span class="title mr-2">{{webGis.auth.login || 'guest'}}</span>
       <v-btn icon  @click="logout">

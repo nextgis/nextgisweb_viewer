@@ -6,7 +6,6 @@ import { ViewerResource } from './ResourceItem';
 import NgwConnector from '@nextgis/ngw-connector';
 import { findResource } from './utils';
 import Vue from 'vue';
-import { namespace } from 'vuex-class';
 
 export interface State {
   webGis?: WebGis;
@@ -56,11 +55,12 @@ const _actions: DefineActions<Actions, State, Mutations, Getters> = {
         auth: webGis.auth
       });
       // const main = await connector.get('resource.item', null, { id: 0 });
-      // const main = await connector.get('pyramid.settings');
       const resources = await connector.get('resource.collection', null, { parent: 0 });
+      // const systemName = await connector.get('pyramid.system_name');
       const existWebGis: WebGis = {
         ...webGis,
-        // meta: main,
+        meta: {},
+        // meta: { systemName: systemName && systemName.full_name },
         connector,
         resources: resources.map((x) => x.resource)
       };
