@@ -1,13 +1,14 @@
 import { Vue, Component, Watch } from 'vue-property-decorator';
 
-import { State, Action } from 'vuex-class';
 import NgwMap from '@nextgis/ngw-map';
 
 import { WebGis } from 'src/store/modules/WebGis';
 import { ViewerResource } from 'src/store/modules/ResourceItem';
 import { ResourceCls } from 'nextgisweb_frontend/packages/ngw-connector/src';
 
-const namespace: string = 'app';
+
+import { namespace } from 'vuex-class';
+export const { Action, Getter, State } = namespace('app');
 
 export interface TreeItem {
   id: number;
@@ -33,8 +34,9 @@ const blockedTreeCls: ResourceCls[] = ['webmap', 'vector_layer', 'raster_layer']
 
 @Component
 export class MainPage extends Vue {
-  @State('webGis', { namespace }) webGis?: WebGis;
-  @Action('loadChildren', { namespace }) loadChildren!: (id: number) => Promise<ViewerResource[]>;
+  @State webGis?: WebGis;
+  @Action loadChildren!: (id: number) => Promise<ViewerResource[]>;
+  @Action setWebGis!: (webGis?: WebGis) => any;
 
   active: string[] = [];
 
@@ -54,18 +56,29 @@ export class MainPage extends Vue {
     return [];
   }
 
+  logout() {
+    this.setWebGis();
+  }
+
   @Watch('active')
   onActiveChange() {
     const active = this.active[0];
     if (active) {
-      this.$router.push({ path: `/${active}/view`});
+      this.$router.push({ path: `/${active}/view` });
     } else {
-      this.$router.push({ path: `/`});
+      this.$router.push({ path: `/` });
     }
   }
 
   getChildren(resource: ViewerResource) {
-    const children = resource._children ? resource._children : [];
+    const children = resource._children ? [...resource._children] : [];
+    if (resource.cls === 'vector_layer' && children.length) {
+      children.push({
+        ...resource,
+        display_name: resource.display_name + '-vector',
+        children: false
+      });
+    }
     return children.map((x) => this._resourceToTreeItem(x));
   }
 
@@ -86,7 +99,7 @@ export class MainPage extends Vue {
       cls: r.cls,
       icon: clsIconAliases[r.cls]
     };
-    if (r.children && blockedTreeCls.indexOf(r.cls) === -1) {
+    if (r.children) {
       item.children = this.getChildren(r);
     }
     return item;

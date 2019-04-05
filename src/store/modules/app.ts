@@ -23,12 +23,12 @@ export interface Getters {
 }
 
 export interface Mutations {
-  webGis: WebGis;
+  webGis: WebGis | undefined;
   updateResourceChildren: TreeItemChildrenpdateOptions;
 }
 
 export interface Actions {
-  setWebGis: WebGis;
+  setWebGis: WebGis | undefined;
   loadChildren: number;
 }
 
@@ -48,9 +48,45 @@ const _getters: DefineGetters<Getters, State> = {
   }
 };
 
+const _actions: DefineActions<Actions, State, Mutations, Getters> = {
+  async setWebGis({ commit }, webGis) {
+    if (webGis) {
+      const connector = new NgwConnector({
+        baseUrl: webGis.url,
+        auth: webGis.auth
+      });
+      // const main = await connector.get('resource.item', null, { id: 0 });
+      // const main = await connector.get('pyramid.settings');
+      const resources = await connector.get('resource.collection', null, { parent: 0 });
+      const existWebGis: WebGis = {
+        ...webGis,
+        // meta: main,
+        connector,
+        resources: resources.map((x) => x.resource)
+      };
+      commit('webGis', existWebGis);
+      router.push('/');
+    } else {
+      commit('webGis', undefined);
+      router.push('/login');
+    }
+    // router.push('/' + (webGis.id ? webGis.id : ''));
+  },
+
+  async loadChildren({ commit, state }, id: number) {
+    const connector = state.webGis && state.webGis.connector;
+    if (connector) {
+      const collection = await connector.get('resource.collection', null, { parent: id });
+      const children = collection.map((x) => x.resource) as ViewerResource[];
+      commit('updateResourceChildren', { id, children });
+      return children;
+    }
+  }
+};
+
 const _mutations: DefineMutations<Mutations, State> = {
 
-  webGis(state, webGis) {
+  webGis(state, webGis?) {
     state.webGis = webGis;
   },
 
@@ -62,33 +98,6 @@ const _mutations: DefineMutations<Mutations, State> = {
       if (resourceInTree) {
         Vue.set(resourceInTree, '_children', children);
       }
-    }
-  }
-};
-
-const _actions: DefineActions<Actions, State, Mutations, Getters> = {
-  async setWebGis({ commit }, webGis) {
-    const connector = new NgwConnector({
-      baseUrl: webGis.url,
-      auth: webGis.auth
-    });
-    const resources = await connector.get('resource.collection', null, { parent: 0 });
-    const existWebGis: WebGis = {
-      ...webGis,
-      connector,
-      resources: resources.map((x) => x.resource)
-    };
-    commit('webGis', existWebGis);
-    router.push('/');
-  },
-
-  async loadChildren({ commit, state }, id: number) {
-    const connector = state.webGis && state.webGis.connector;
-    if (connector) {
-      const collection = await connector.get('resource.collection', null, { parent: id });
-      const children = collection.map((x) => x.resource) as ViewerResource[];
-      commit('updateResourceChildren', { id, children });
-      return children;
     }
   }
 };

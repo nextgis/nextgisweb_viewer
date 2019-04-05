@@ -5,14 +5,34 @@
         <v-flex xs12 sm8 md4>
           <v-card class="elevation-12">
             <v-toolbar dark color="primary">
-              <v-toolbar-title>Connext to WebGIS</v-toolbar-title>
+              <v-toolbar-title>Connect to WebGIS</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
-              <v-chip v-if="loginErrorMessage" label outline color="red">{{loginErrorMessage}}</v-chip>
+              <v-chip
+                v-if="loginErrorMessage"
+                label
+                outline
+                color="red"
+                class="top-error-message"
+              >{{loginErrorMessage}}</v-chip>
 
               <v-form @submit="onGoBtnClick" onSubmit="return false;">
+                <v-switch v-model="fromCloud">
+                  <template v-slot:label>
+                    <v-icon class="pr-1">mdi-cloud</v-icon>From NextGIS Web cloud
+                  </template>
+                </v-switch>
+
+                <v-layout v-if="fromCloud" align-center justify-space-between row fill-height>
+                  <v-btn @click="protocolClick++">{{protocol}}</v-btn>
+                  <v-text-field v-model="urlStr" ref="webgis-name" name="webgis-name" label="WebGIS name" type="text"></v-text-field>
+
+                  <v-chip>.{{cloudUrl}}</v-chip>
+                </v-layout>
+
                 <v-text-field
-                  v-model="url"
+                  v-else
+                  v-model="urlStr"
                   ref="url"
                   name="url"
                   label="WebGIS URL"
@@ -54,4 +74,7 @@ export { Login as default } from "./Login";
 
 
 <style lang="scss">
+.top-error-message {
+  width: 100%;
+}
 </style>

@@ -26,7 +26,7 @@ const router = new VueRouter({
     },
     {
       path: '*',
-      redirect: '/'
+      redirect: '/login'
     }
   ]
 });
@@ -34,9 +34,13 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   // store.dispatch('fetchWebGis');
   if (to.fullPath !== '/login') {
-    if (!store.state.app.webGis) {
+    const webGis = store.state.app.webGis;
+    if (!webGis) {
       next('/login');
     }
+    // if (webGis && webGis.id !== to.params.webgis) {
+    //   next('/login');
+    // }
   }
   if (to.fullPath === '/login') {
     if (store.state.app.webGis) {

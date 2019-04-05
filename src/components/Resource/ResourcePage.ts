@@ -27,10 +27,6 @@ export class ResourcePage extends Vue {
 
   isLoading = true;
 
-  layerResourceId: number = 0;
-
-  styles: ViewerResource[] = [];
-
   mounted() {
     this.ngwMap = new NgwMap(new MapAdapter(), {
       baseUrl: this.webGis.url,
@@ -51,19 +47,12 @@ export class ResourcePage extends Vue {
     if (resourceId) {
       const resource = this.getResourceById(Number(resourceId));
       this.resource = resource;
-      this._updateMap();
+      this.showLayer();
     }
   }
 
-  async fetch() {
-    if (this.resource) {
-      return this.loadChildren(this.resource.id);
-    }
-  }
-
-  @Watch('layerResourceId')
   async showLayer() {
-    const resource = this.styles.find((x) => x.id === this.layerResourceId);
+    const resource = this.resource;
     if (resource && this.ngwMap) {
       this.isLoading = true;
       this.ngwMap.removeOverlays();
@@ -100,31 +89,6 @@ export class ResourcePage extends Vue {
         }
       }
       this.isLoading = false;
-    }
-  }
-
-  private async _updateMap() {
-    await this.fetch();
-    const resource = this.resource;
-    this.styles = [];
-    if (this.ngwMap && resource) {
-      const resourcesWithStyles: ResourceCls[] = ['raster_layer', 'vector_layer'];
-      if (resourcesWithStyles.indexOf(resource.cls) !== -1) {
-        const children = resource._children;
-        if (children && children.length > 0) {
-          this.styles = [...children];
-          if (resource.cls === 'vector_layer') {
-            this.styles.push(resource);
-          }
-        } else {
-          this.styles.push(resource);
-        }
-      } else {
-        this.styles.push(resource);
-      }
-      if (this.styles.length) {
-        this.layerResourceId = this.styles[0].id;
-      }
     }
   }
 }

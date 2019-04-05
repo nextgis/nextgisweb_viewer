@@ -2,7 +2,6 @@ import { Vue, Component } from 'vue-property-decorator';
 
 import { WebGis } from '../store/modules/WebGis';
 import { namespace } from 'vuex-class';
-
 export const { Action, Getter, State } = namespace('app');
 
 @Component<Login>({})
@@ -13,12 +12,28 @@ export class Login extends Vue {
 
   guest = true;
 
-  url: string = '';
+  urlStr: string = '';
   login: string = '';
   password: string = '';
   formHasErrors = true;
   isLoading = false;
   loginErrorMessage = '';
+
+  cloudUrl = 'nextgis.com';
+  fromCloud = true;
+  protocolItems = ['https://', 'http://'];
+  protocolClick = 0;
+
+  get protocol() {
+    return this.protocolItems[this.protocolClick % this.protocolItems.length];
+  }
+
+  get url(): string {
+    if (this.fromCloud) {
+      return `${this.protocol}${this.urlStr}.${this.cloudUrl}`;
+    }
+    return this.urlStr;
+  }
 
   form: string[] = ['url', 'login', 'password'];
 
@@ -55,6 +70,8 @@ export class Login extends Vue {
       this.isLoading = true;
       this.loginErrorMessage = '';
       this.setWebGis({
+        // id: this.fromCloud ? this.urlStr : createWebGisNameFromUrl(this.urlStr),
+        id: this.urlStr,
         url: this.url,
         auth: {
           login: this.login,

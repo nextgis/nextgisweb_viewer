@@ -40,11 +40,12 @@
         <!-- <router-link to="/"><logo></logo></router-link> -->
 
       </v-toolbar-title>
-      <span class="title ml-3">NGW Viewer</span>
+      <span class="title ml-3">{{webGis.id}}</span>
       <v-spacer></v-spacer>
-      <!-- <v-btn icon large href="https://github.com/nextgis/nextgisweb_frontend" target="_blank">
-        <v-icon large>mdi-github-circle</v-icon>
-      </v-btn> -->
+      <span class="title mr-2">{{webGis.auth.login || 'guest'}}</span>
+      <v-btn icon  @click="logout">
+        <v-icon>mdi-logout</v-icon>
+      </v-btn>
     </v-toolbar>
 
     <v-content>
