@@ -1,6 +1,6 @@
 import { Vue, Component } from 'vue-property-decorator';
 
-import { WebGis } from '../store/modules/WebGis';
+import { WebGis, createWebGisNameFromUrl } from '../store/modules/WebGis';
 import { namespace } from 'vuex-class';
 export const { Action, Getter, State } = namespace('app');
 
@@ -70,8 +70,8 @@ export class Login extends Vue {
       this.isLoading = true;
       this.loginErrorMessage = '';
       this.setWebGis({
-        // id: this.fromCloud ? this.urlStr : createWebGisNameFromUrl(this.urlStr),
-        id: this.urlStr,
+        id: this.fromCloud ? this.urlStr : createWebGisNameFromUrl(this.urlStr),
+        // id: this.urlStr,
         url: this.url,
         auth: {
           login: this.login,

@@ -4,6 +4,7 @@ import Login from './Login/Login.vue';
 import store from './store';
 import ResourcePage from './components/Resource/ResourcePage.vue';
 import SearchPage from './components/Search/SearchPage.vue';
+import { WebGis } from './store/modules/WebGis';
 // import ExampleOutsidePage from './ExampleOutsidePage.vue';
 
 const router = new VueRouter({
@@ -19,7 +20,7 @@ const router = new VueRouter({
     },
     // { path: '/page/:id', component: ExampleOutsidePage },
     {
-      path: '/:resource?', name: 'main', component: MainPage, children: [
+      path: '/:webgis/:resource?', name: 'main', component: MainPage, children: [
         { path: '/', component: SearchPage },
         { path: 'view', component: ResourcePage },
       ]
@@ -34,17 +35,19 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   // store.dispatch('fetchWebGis');
   if (to.fullPath !== '/login') {
-    const webGis = store.state.app.webGis;
+    const webGis: WebGis = store.state.app.webGis;
     if (!webGis) {
       next('/login');
     }
-    // if (webGis && webGis.id !== to.params.webgis) {
-    //   next('/login');
-    // }
+    if (webGis && webGis.id !== to.params.webgis) {
+      next('/login');
+    } else {
+      next('/' + store.state.app.webGis.id);
+    }
   }
   if (to.fullPath === '/login') {
     if (store.state.app.webGis) {
-      next('/');
+      next('/' + store.state.app.webGis.id);
     }
   }
   next();

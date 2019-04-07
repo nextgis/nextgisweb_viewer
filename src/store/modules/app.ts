@@ -56,21 +56,26 @@ const _actions: DefineActions<Actions, State, Mutations, Getters> = {
       });
       // const main = await connector.get('resource.item', null, { id: 0 });
       const resources = await connector.get('resource.collection', null, { parent: 0 });
-      // const systemName = await connector.get('pyramid.system_name');
+      let systemName;
+      try {
+        systemName = await connector.get('pyramid.system_name');
+      } catch (er) {
+        //
+      }
       const existWebGis: WebGis = {
         ...webGis,
-        meta: {},
-        // meta: { systemName: systemName && systemName.full_name },
+        // meta: {},
+        meta: { systemName: systemName && systemName.full_name },
         connector,
         resources: resources.map((x) => x.resource)
       };
       commit('webGis', existWebGis);
-      router.push('/');
+      // router.push('/');
+      router.push('/' + (webGis.id ? webGis.id : ''));
     } else {
       commit('webGis', undefined);
       router.push('/login');
     }
-    // router.push('/' + (webGis.id ? webGis.id : ''));
   },
 
   async loadChildren({ commit, state }, id: number) {
