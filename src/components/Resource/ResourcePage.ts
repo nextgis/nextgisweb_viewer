@@ -11,6 +11,7 @@ import { ViewerResource } from '../../store/modules/ResourceItem';
 import { WebGis } from '../../store/modules/WebGis';
 import { WebMapLayerAdapter, WebMapAdapterOptions } from '@nextgis/ngw-kit';
 import { Feature } from 'geojson';
+import { Route } from 'vue-router';
 
 const namespace: string = 'app';
 
@@ -27,7 +28,8 @@ export class ResourcePage extends Vue {
   resource?: ViewerResource;
 
   isLoading = true;
-  activeTab: 'fields' | 'attachment' | 'description' = 'fields';
+  // activeTab: 'fields' | 'attachment' | 'description' = 'fields';
+  activeTab = '0';
 
   selectedFeature: any = null;
 
@@ -41,18 +43,33 @@ export class ResourcePage extends Vue {
       connector: this.webGis.connector,
     });
     this.isLoading = true;
+
     this.updateResource();
   }
 
   @Watch('$route')
-  updateResource() {
-    const params = this.$router.currentRoute.params;
+  updateResource(from?: Route, to?: Route) {
+    if (from && to && from.path === to.path) {
+      return;
+    }
+    const currentRoute = this.$router.currentRoute;
+    const params = currentRoute.params;
     const resourceId = params && params.resource;
+    const tab = currentRoute.query.tab as string;
+    this.activeTab = tab || this.activeTab;
+    this.selectedFeature = null;
+
     if (resourceId) {
       const resource = this.getResourceById(Number(resourceId));
       this.resource = resource;
       this.showLayer();
     }
+
+  }
+
+  @Watch('activeTab')
+  onTabChange() {
+    this._updateQuery();
   }
 
   async showLayer() {
@@ -83,6 +100,17 @@ export class ResourcePage extends Vue {
             this._setSelected(features);
           }
         });
+        const feature = this.$router.currentRoute.query.feature;
+        if (feature &&  vectorLayer.select) {
+          vectorLayer.select((x) => {
+            // @ts-ignore
+            return x.feature.id === Number(feature);
+          });
+          this._setSelected([{
+            // @ts-ignore
+            id: feature
+          }]);
+        }
         layer = vectorLayer;
       } else if (styleResources.indexOf(resource.cls) !== -1) {
         layer = await this.ngwMap.addNgwLayer({
@@ -116,7 +144,6 @@ export class ResourcePage extends Vue {
     const resourceId = this.resource && this.resource.id;
     const connector = this.webGis && this.webGis.connector;
     if (feature && connector && resourceId) {
-      console.log(feature);
       // @ts-ignore
       const fid: number = feature.id;
       const selected = await connector.get('feature_layer.feature.item', null, {
@@ -124,11 +151,25 @@ export class ResourcePage extends Vue {
         fid
       });
       this.selectedFeature = selected;
+
     } else {
       this.selectedFeature = undefined;
+
     }
     if (this.ngwMap) {
       this.ngwMap.mapAdapter.map.invalidateSize();
     }
+    this._updateQuery();
+  }
+
+  private _updateQuery() {
+    const query: any = {};
+    if (this.selectedFeature) {
+      query.feature = this.selectedFeature.id;
+    }
+    if (this.activeTab) {
+      query.tab = this.activeTab;
+    }
+    this.$router.push({ query });
   }
 }

@@ -41,6 +41,8 @@ export class MainPage extends Vue {
 
   drawer = null;
 
+  query: any = null;
+
   get items(): TreeItem[] {
     if (this.webGis) {
       const resources = this.webGis.resources;
@@ -55,6 +57,7 @@ export class MainPage extends Vue {
 
   async created() {
     const params = this.$router.currentRoute.params;
+    this.query = this.$router.currentRoute.query;
     if (params.webgis) {
       const currentGisId = this.webGis && this.webGis.id;
       const resId = Number(params.resource);
@@ -92,10 +95,14 @@ export class MainPage extends Vue {
     if (id) {
       const active = this.active[0];
       if (active) {
-        this.$router.push(`/${id}/${active}/view`);
+        const path = `/${id}/${active}/view`;
+        if (this.$router.currentRoute.path !== path) {
+          this.$router.push({ path, query: this.query });
+        }
       } else {
         this.$router.push(`/${id}/`);
       }
+      this.query = null;
     }
   }
 
