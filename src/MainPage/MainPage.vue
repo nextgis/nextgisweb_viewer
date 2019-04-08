@@ -43,12 +43,10 @@
         </v-toolbar-title>
         <span class="title ml-3">{{webGis ? webGis.meta.systemName || webGis.id : 'loading...'}}</span>
         <v-spacer></v-spacer>
-        <span v-if="webGis && webGis.auth">
-          <span class="title mr-2">{{webGis.auth.login || 'guest'}}</span>
-          <v-btn icon @click="logout">
-            <v-icon>mdi-logout</v-icon>
-          </v-btn>
-        </span>
+        <span class="title mr-2">{{webGis && webGis.auth && webGis.auth.login || 'guest'}}</span>
+        <v-btn icon @click="logout">
+          <v-icon>mdi-logout</v-icon>
+        </v-btn>
       </v-toolbar>
 
       <v-content>
