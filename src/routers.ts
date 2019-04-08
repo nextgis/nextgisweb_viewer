@@ -20,37 +20,40 @@ const router = new VueRouter({
     },
     // { path: '/page/:id', component: ExampleOutsidePage },
     {
-      path: '/:webgis/:resource?', name: 'main', component: MainPage, children: [
+      path: '/:webgis/:resource?', component: MainPage, children: [
         { path: '/', component: SearchPage },
         { path: 'view', component: ResourcePage },
       ]
     },
-    {
-      path: '*',
-      redirect: '/login'
-    }
+    // {
+    //   path: '*',
+    //   redirect: '/login'
+    // }
   ]
 });
 
-router.beforeEach((to, from, next) => {
-  // store.dispatch('fetchWebGis');
-  if (to.fullPath !== '/login') {
-    const webGis: WebGis = store.state.app.webGis;
-    if (!webGis) {
-      next('/login');
-    }
-    if (webGis && webGis.id !== to.params.webgis) {
-      next('/login');
-    } else {
-      next('/' + store.state.app.webGis.id);
-    }
-  }
-  if (to.fullPath === '/login') {
-    if (store.state.app.webGis) {
-      next('/' + store.state.app.webGis.id);
-    }
-  }
-  next();
-});
+// router.beforeEach((to, from, next) => {
+//   // store.dispatch('fetchWebGis');
+//   // const webGis: WebGis = store.state.app.webGis;
+//   // if (to.fullPath !== '/login') {
+//   //   if (!webGis) {
+//   //     next('/login');
+//   //   } else {
+//   //     if (to.params.webgis !== undefined) {
+//   //       if (webGis.id !== to.params.webgis) {
+//   //         next('/login');
+//   //       }
+//   //     } else {
+//   //       next('/' + webGis.id);
+//   //     }
+//   //   }
+//   // }
+//   // if (to.fullPath === '/login') {
+//   //   if (webGis && webGis.id) {
+//   //     next('/' + webGis.id);
+//   //   }
+//   // }
+//   next();
+// });
 
 export default router;

@@ -7,7 +7,7 @@ interface WebGisMeta {
 }
 export interface WebGis {
   url: string;
-  auth: Credentials;
+  auth?: Credentials;
   id?: string;
   meta?: WebGisMeta;
   guest?: boolean;
@@ -24,5 +24,9 @@ export function createWebGisNameFromUrl(url: string): string {
   }
   name += l.hostname;
   return name;
+}
+
+export function createUrlFromWebGisName(str: string): string {
+  return `https://${str}.nextgis.com`;
 }
 

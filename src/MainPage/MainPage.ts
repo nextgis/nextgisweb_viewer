@@ -1,13 +1,12 @@
 import { Vue, Component, Watch } from 'vue-property-decorator';
 
-import NgwMap from '@nextgis/ngw-map';
-
-import { WebGis } from 'src/store/modules/WebGis';
-import { ViewerResource } from 'src/store/modules/ResourceItem';
-import { ResourceCls } from 'nextgisweb_frontend/packages/ngw-connector/src';
+import { WebGis, createUrlFromWebGisName } from '../store/modules/WebGis';
+import { ViewerResource } from '../store/modules/ResourceItem';
+import { ResourceCls } from '@nextgis/ngw-connector';
 
 
 import { namespace } from 'vuex-class';
+import { findResource } from '../store/modules/utils';
 export const { Action, Getter, State } = namespace('app');
 
 export interface TreeItem {
@@ -29,8 +28,6 @@ const clsIconAliases: { [key in ResourceCls]?: string } = {
   raster_style: 'mdi-palette-swatch',
   basemap_layer: 'mdi-map',
 };
-
-const blockedTreeCls: ResourceCls[] = ['webmap', 'vector_layer', 'raster_layer'];
 
 @Component
 export class MainPage extends Vue {
@@ -56,17 +53,49 @@ export class MainPage extends Vue {
     return [];
   }
 
+  async created() {
+    const params = this.$router.currentRoute.params;
+    if (params.webgis) {
+      const currentGisId = this.webGis && this.webGis.id;
+      const resId = Number(params.resource);
+      if (currentGisId !== params.webgis) {
+        await this.login({
+          id: params.webgis,
+          url: createUrlFromWebGisName(params.webgis)
+        });
+        if (this.webGis && resId) {
+          const exist = this.webGis.resources ? findResource(this.webGis.resources, resId) : false;
+          if (!exist) {
+            await this._getTopParent(resId);
+            this.active = [String(resId)];
+          }
+        }
+      }
+    }
+  }
+
+  async login(webGis: WebGis) {
+    try {
+      await this.setWebGis(webGis);
+    } catch (er) {
+      this.$router.push('/login');
+    }
+  }
+
   logout() {
     this.setWebGis();
   }
 
   @Watch('active')
   onActiveChange() {
-    const active = this.active[0];
-    if (active) {
-      this.$router.push({ path: `/${active}/view` });
-    } else {
-      this.$router.push({ path: `/` });
+    const id = this.webGis && this.webGis.id;
+    if (id) {
+      const active = this.active[0];
+      if (active) {
+        this.$router.push(`/${id}/${active}/view`);
+      } else {
+        this.$router.push(`/${id}/`);
+      }
     }
   }
 
@@ -103,5 +132,37 @@ export class MainPage extends Vue {
       item.children = this.getChildren(r);
     }
     return item;
+  }
+
+  private async _getTopParent(id: number) {
+    if (this.webGis) {
+      const connector = this.webGis.connector;
+      if (connector) {
+        let parent;
+        const parents = [];
+        while (!parent) {
+          try {
+            const resource = await connector.get('resource.item', null, { id });
+            if (this.webGis.resources) {
+              id = resource.resource.parent.id;
+              if (id) {
+                parents.push(id);
+                parent = findResource(this.webGis.resources, id);
+              } else {
+                break;
+              }
+            }
+          } catch (er) {
+            break;
+          }
+        }
+        if (parent) {
+          for (const p of parents.reverse()) {
+            await this.loadChildren(Number(p));
+          }
+          this.open = parents.map(x => String(x));
+        }
+      }
+    }
   }
 }
