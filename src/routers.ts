@@ -25,10 +25,10 @@ const router = new VueRouter({
         { path: 'view', component: ResourcePage },
       ]
     },
-    // {
-    //   path: '*',
-    //   redirect: '/login'
-    // }
+    {
+      path: '*',
+      redirect: '/login'
+    }
   ]
 });
 
