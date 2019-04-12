@@ -1,11 +1,6 @@
 <template>
   <v-container>
-    <v-text-field
-      flat
-      prepend-inner-icon="mdi-magnify"
-      label="Search resource"
-    ></v-text-field>
-    <p>Search is not work yet</p>
+    <p>Select any vector layer, style or webmap in the resource tree to see it on the map.</p>
   </v-container>
 </template>
 

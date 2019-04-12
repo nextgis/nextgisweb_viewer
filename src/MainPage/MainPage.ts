@@ -38,19 +38,24 @@ export class MainPage extends Vue {
   active: string[] = [];
 
   open: string[] = [];
-
+  search: string = '';
+  searchLoading = false;
+  itemsFromSearch: ViewerResource[] = [];
   drawer = null;
 
   query: any = null;
 
   get items(): TreeItem[] {
-    if (this.webGis) {
-      const resources = this.webGis.resources;
-      if (resources) {
-        return resources.map((x) => {
-          return this._resourceToTreeItem(x);
-        });
-      }
+    let resources: ViewerResource[] = [];
+    if (this.search) {
+      resources = this.itemsFromSearch;
+    } else if (this.webGis && this.webGis.resources) {
+      resources = this.webGis.resources;
+    }
+    if (resources) {
+      return resources.map((x) => {
+        return this._resourceToTreeItem(x);
+      });
     }
     return [];
   }
@@ -89,6 +94,23 @@ export class MainPage extends Vue {
     this.setWebGis();
   }
 
+  @Watch('search')
+  async searchItems() {
+    const connector = this.webGis && this.webGis.connector;
+    if (connector) {
+      this.searchLoading = true;
+      connector.get('resource.search', null, {
+        display_name: this.search
+      }).then((resp) => {
+        if (resp) {
+          this.itemsFromSearch = resp.map((x: { resource: TreeItem }) => x.resource) as ViewerResource[];
+        }
+      }).finally(() => {
+        this.searchLoading = false;
+      });
+    }
+  }
+
   @Watch('active')
   onActiveChange() {
     const id = this.webGis && this.webGis.id;
@@ -122,8 +144,15 @@ export class MainPage extends Vue {
     this.open = data;
   }
 
-  fetch(e: TreeItem) {
-    return this.loadChildren(Number(e.id));
+  async fetch(e: TreeItem) {
+    const resId = Number(e.id);
+    const children = await this.loadChildren(resId);
+    if (this.search && this.itemsFromSearch) {
+      const parent = findResource(this.itemsFromSearch, resId);
+      if (parent) {
+        Vue.set(parent, '_children', children);
+      }
+    }
   }
 
   private _resourceToTreeItem(resource: ViewerResource) {

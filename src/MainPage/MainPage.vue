@@ -11,6 +11,15 @@
         fixed
         app
       >
+        <v-text-field
+          v-model="search"
+          :loading="searchLoading"
+          solo
+          label="Search by full name"
+          clearable
+          class="pl-3 pr-3 pt-3"
+          hide-details
+        ></v-text-field>
         <v-treeview
           v-if="items"
           :load-children="fetch"
