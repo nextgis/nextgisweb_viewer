@@ -1,6 +1,6 @@
 {
   "name": "ngw-viewer",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -21,7 +21,7 @@
     "vue": "^2.6.10",
     "vue-class-component": "^7.0.2",
     "vue-property-decorator": "^8.1.0",
-    "vue-router": "^3.0.3",
+    "vue-router": "^3.0.4",
     "vuetify": "^1.5.11",
     "vuex": "^3.1.0",
     "vuex-class": "^0.3.2",
@@ -48,7 +48,7 @@
     "vue-style-loader": "^4.1.2",
     "vue-template-compiler": "^2.6.10",
     "vuetify-loader": "^1.2.1",
-    "webpack": "^4.29.6",
+    "webpack": "^4.30.0",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.3.1"

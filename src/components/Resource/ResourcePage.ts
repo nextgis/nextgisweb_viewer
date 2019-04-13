@@ -33,6 +33,8 @@ export class ResourcePage extends Vue {
 
   selectedFeature: any = null;
 
+  vectorLayerId: string | undefined = undefined;
+
   mounted() {
     this.ngwMap = new NgwMap(new MapAdapter(), {
       baseUrl: this.webGis.url,
@@ -88,6 +90,7 @@ export class ResourcePage extends Vue {
             selectable: true,
           }
         }) as VectorLayerAdapter;
+        this.vectorLayerId = this.ngwMap.getLayerId(vectorLayer);
         this.ngwMap.emitter.on('layer:click', (e) => {
           if (vectorLayer && vectorLayer.getSelected && e.layer.id === vectorLayer.id) {
             const selected = vectorLayer.getSelected();
@@ -137,6 +140,14 @@ export class ResourcePage extends Vue {
       }
       this.isLoading = false;
     }
+  }
+
+  cleanSelected() {
+    const ngwMap = this.ngwMap;
+    if (ngwMap && this.vectorLayerId) {
+      ngwMap.unSelectLayer(this.vectorLayerId);
+    }
+    this._setSelected([]);
   }
 
   private async _setSelected(features: Feature[]) {
