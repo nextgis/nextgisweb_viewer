@@ -11,7 +11,7 @@
               <v-icon>mdi-close</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title header>Feature#{{selectedFeature.id}}</v-list-tile-title>
+              <v-list-tile-title class="attribution-container__header">Feature#{{selectedFeature.id}}</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
         </v-list>
@@ -91,6 +91,10 @@ export { ResourcePage as default } from "./ResourcePage";
   height: 100%;
 }
 
+.attribution-container__header {
+  font-size: 1.4rem;
+}
+
 .tabs-container-div {
   // position: absolute;
   height: 100%;
@@ -103,7 +107,7 @@ export { ResourcePage as default } from "./ResourcePage";
   .v-window {
     overflow: auto;
     position: absolute;
-    height: calc(100% - 48px) !important;
+    height: calc(100% - 48px - 48px) !important;
     width: 100%;
   }
 }
