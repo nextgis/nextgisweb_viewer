@@ -2,7 +2,7 @@ import { Vue, Component, Watch } from 'vue-property-decorator';
 
 import { State, Action, Getter } from 'vuex-class';
 import NgwMap, { LayerAdapter, VectorLayerAdapter } from '@nextgis/ngw-map';
-import { ResourceCls, PCancelable } from '@nextgis/ngw-connector';
+import { ResourceCls } from '@nextgis/ngw-connector';
 
 import MapAdapter from '@nextgis/leaflet-map-adapter';
 import 'leaflet/dist/leaflet.css';
@@ -35,7 +35,7 @@ export class ResourcePage extends Vue {
 
   vectorLayerId: string | undefined = undefined;
 
-  getFeaturePromise?: PCancelable<any>;
+  getFeaturePromise?: Promise<any>;
 
   mounted() {
     this.ngwMap = new NgwMap(new MapAdapter(), {
@@ -157,7 +157,7 @@ export class ResourcePage extends Vue {
     const resourceId = this.resource && this.resource.id;
     const connector = this.webGis && this.webGis.connector;
     if (this.getFeaturePromise) {
-      this.getFeaturePromise.cancel();
+      // this.getFeaturePromise;
     }
     if (feature && connector && resourceId) {
       // @ts-ignore
