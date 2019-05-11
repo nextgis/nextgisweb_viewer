@@ -66,6 +66,7 @@ module.exports = (env, argv) => {
 
   let plugins = [
     new VueLoaderPlugin(),
+    new VuetifyLoaderPlugin(),
     new HtmlWebpackPlugin({
       template: 'src/index.html',
       filename: 'index.html'

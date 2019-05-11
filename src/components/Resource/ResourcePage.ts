@@ -81,20 +81,20 @@ export class ResourcePage extends Vue {
     if (resource && this.ngwMap) {
       this.isLoading = true;
       this.ngwMap.removeOverlays();
-      let layer: LayerAdapter | VectorLayerAdapter | undefined;
-      if (resource.cls === 'vector_layer') {
-        const vectorLayer = await this.ngwMap.addNgwLayer({
-          resourceId: resource.id,
-          adapter: 'GEOJSON',
-          adapterOptions: {
-            paint: { fillOpacity: 0.5, stroke: true },
-            selectedPaint: { fillOpacity: 0.8, stroke: true, radius: 10 },
-            selectable: true,
-          }
-        }) as VectorLayerAdapter;
-        this.vectorLayerId = this.ngwMap.getLayerId(vectorLayer);
+      const layer = await this.ngwMap.addNgwLayer({
+        resourceId: resource.id,
+        adapterOptions: {
+          paint: { fillOpacity: 0.5, stroke: true },
+          selectedPaint: { fillOpacity: 0.8, stroke: true, radius: 10 },
+          selectable: true,
+        }
+      });
+
+      if (layer && 'getSelected' in layer) {
+        const vectorLayer = layer as VectorLayerAdapter;
+        this.vectorLayerId = this.ngwMap.getLayerId(layer);
         this.ngwMap.emitter.on('layer:click', (e) => {
-          if (vectorLayer && vectorLayer.getSelected && e.layer.id === vectorLayer.id) {
+          if (vectorLayer.getSelected && e.layer.id === vectorLayer.id) {
             const selected = vectorLayer.getSelected();
             const features: Feature[] = [];
             selected.forEach((x) => {
@@ -106,7 +106,7 @@ export class ResourcePage extends Vue {
           }
         });
         const feature = this.$router.currentRoute.query.feature;
-        if (feature &&  vectorLayer.select) {
+        if (feature && vectorLayer.select) {
           vectorLayer.select((x) => {
             // @ts-ignore
             return x.feature.id === Number(feature);
@@ -116,20 +116,8 @@ export class ResourcePage extends Vue {
             id: feature
           }]);
         }
-        layer = vectorLayer;
-      } else if (styleResources.indexOf(resource.cls) !== -1) {
-        layer = await this.ngwMap.addNgwLayer({
-          resourceId: resource.id
-        });
-      } else if (resource.cls === 'webmap') {
-        layer = await this.ngwMap.addLayer<'WEBMAP', WebMapAdapterOptions>(WebMapLayerAdapter, {
-          webMap: this.ngwMap,
-          resourceId: resource.id,
-          baseUrl: this.webGis.url,
-          connector: this.webGis.connector!
-        });
-
       }
+
       if (layer) {
         if (layer.getExtent) {
           const extent = await layer.getExtent();
@@ -162,11 +150,11 @@ export class ResourcePage extends Vue {
     if (feature && connector && resourceId) {
       // @ts-ignore
       const fid: number = feature.id;
+      this.getFeaturePromise = undefined;
       this.getFeaturePromise = connector.get('feature_layer.feature.item', null, {
         id: resourceId,
         fid
       });
-      this.getFeaturePromise = undefined;
       const selected = await this.getFeaturePromise;
       this.selectedFeature = selected;
 

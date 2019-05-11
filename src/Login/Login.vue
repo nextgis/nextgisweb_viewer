@@ -25,7 +25,13 @@
 
                 <v-layout v-if="fromCloud" align-center justify-space-between row fill-height>
                   <v-btn @click="protocolClick++">{{protocol}}</v-btn>
-                  <v-text-field v-model="urlStr" ref="webgis-name" name="webgis-name" label="WebGIS name" type="text"></v-text-field>
+                  <v-text-field
+                    v-model="urlStr"
+                    ref="webgis-name"
+                    name="webgis-name"
+                    label="WebGIS name"
+                    type="text"
+                  ></v-text-field>
 
                   <v-chip>.{{cloudUrl}}</v-chip>
                 </v-layout>
