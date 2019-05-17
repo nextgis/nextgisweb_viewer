@@ -32,7 +32,7 @@
                 </v-card-text>
               </v-card>
             </v-tab-item>
-            <v-tab-item v-if="selectedFeature.extensions.attachment">
+            <v-tab-item v-if="selectedFeature.extensions.attachment && webGis">
               <v-layout row wrap>
                 <v-flex v-for="a in selectedFeature.extensions.attachment" :key="a.id" xs4 d-flex>
                   <v-card flat tile class="d-flex">
@@ -66,7 +66,7 @@
 </template>
 
 <script lang="ts">
-export { ResourcePage as default } from "./ResourcePage";
+export { ResourcePage as default } from './ResourcePage';
 </script>
 
 

@@ -1,14 +1,10 @@
 import { Vue, Component } from 'vue-property-decorator';
 
-import { WebGis, createWebGisNameFromUrl } from '../store/modules/WebGis';
-import { namespace } from 'vuex-class';
-export const { Action, Getter, State } = namespace('app');
+import { createWebGisNameFromUrl } from '../store/modules/WebGis';
+import { appModule } from '../store/modules/app';
 
 @Component<Login>({})
 export class Login extends Vue {
-
-  @State webGis!: WebGis;
-  @Action setWebGis!: (webGis: WebGis) => any;
 
   guest = true;
 
@@ -69,7 +65,7 @@ export class Login extends Vue {
     if (this.isValid) {
       this.isLoading = true;
       this.loginErrorMessage = '';
-      this.setWebGis({
+      appModule.setWebGis({
         id: this.fromCloud ? this.urlStr : createWebGisNameFromUrl(this.urlStr),
         // id: this.urlStr,
         url: this.url,

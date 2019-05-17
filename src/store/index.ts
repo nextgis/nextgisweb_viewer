@@ -1,14 +1,15 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { AppState } from './modules/app'
+import { appModule } from './modules/app';
+import { AppState } from './modules/interfaces';
 
 Vue.use(Vuex);
 // @ts-ignore
 const strict = process.env.NODE_ENV !== 'production';
 
-export interface IRootState {
+export interface RootState {
   app: AppState;
 }
 
 // Declare empty store first, dynamically register all modules later.
-export default new Vuex.Store<IRootState>({strict})
+export default new Vuex.Store<RootState>({strict});

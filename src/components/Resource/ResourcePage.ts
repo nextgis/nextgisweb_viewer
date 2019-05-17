@@ -1,28 +1,19 @@
 import { Vue, Component, Watch } from 'vue-property-decorator';
 
-import { State, Action, Getter } from 'vuex-class';
-import NgwMap, { LayerAdapter, VectorLayerAdapter } from '@nextgis/ngw-map';
-import { ResourceCls, CancelablePromise } from '@nextgis/ngw-connector';
+import NgwMap, { VectorLayerAdapter } from '@nextgis/ngw-map';
+import { CancelablePromise } from '@nextgis/ngw-connector';
 
 import MapAdapter from '@nextgis/leaflet-map-adapter';
 import 'leaflet/dist/leaflet.css';
 
 import { ViewerResource } from '../../store/modules/ResourceItem';
-import { WebGis } from '../../store/modules/WebGis';
-import { WebMapLayerAdapter, WebMapAdapterOptions } from '@nextgis/ngw-kit';
 import { Feature } from 'geojson';
 import { Route } from 'vue-router';
 
-const namespace: string = 'app';
-
-const styleResources: ResourceCls[] = ['qgis_vector_style', 'mapserver_style', 'raster_style'];
+import { appModule } from '../../store/modules/app';
 
 @Component
 export class ResourcePage extends Vue {
-  @State('webGis', { namespace }) webGis!: WebGis;
-  @Getter('resourceById', { namespace }) getResourceById!: (id: number) => ViewerResource | undefined;
-  @Action('loadChildren', { namespace }) loadChildren!: (id: number) => Promise<ViewerResource[]>;
-
   ngwMap?: NgwMap;
 
   resource?: ViewerResource;
@@ -37,18 +28,22 @@ export class ResourcePage extends Vue {
 
   getFeaturePromise?: CancelablePromise<any>;
 
-  mounted() {
-    this.ngwMap = new NgwMap(new MapAdapter(), {
-      baseUrl: this.webGis.url,
-      auth: this.webGis.auth,
-      target: 'map',
-      bounds: [0, -90, 180, 90],
-      qmsId: [487, 'baselayer'],
-      connector: this.webGis.connector,
-    });
-    this.isLoading = true;
+  get webGis() { return appModule.webGis; }
 
-    this.updateResource();
+  mounted() {
+    if (this.webGis) {
+      this.ngwMap = new NgwMap(new MapAdapter(), {
+        baseUrl: this.webGis.url,
+        auth: this.webGis.auth,
+        target: 'map',
+        bounds: [0, -90, 180, 90],
+        qmsId: [487, 'baselayer'],
+        connector: this.webGis.connector,
+      });
+      this.isLoading = true;
+
+      this.updateResource();
+    }
   }
 
   @Watch('$route')
@@ -64,7 +59,7 @@ export class ResourcePage extends Vue {
     this.selectedFeature = null;
 
     if (resourceId) {
-      const resource = this.getResourceById(Number(resourceId));
+      const resource = appModule.resourceById(Number(resourceId));
       this.resource = resource;
       this.showLayer();
     }

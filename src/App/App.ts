@@ -1,12 +1,13 @@
 import { Vue, Component } from 'vue-property-decorator';
-import { State } from 'vuex-class';
+import { appModule } from '../store/modules/app';
 
 import { WebGis } from 'src/store/modules/WebGis';
 const namespace: string = 'app';
 
 @Component<App>({})
 export class App extends Vue {
-  @State('webGis', { namespace }) webGis!: WebGis;
+
+  get webGis() { return appModule.webGis; }
 
   // @Getter('fullName', { namespace }) fullName: string;
 

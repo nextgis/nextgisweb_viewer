@@ -4,10 +4,8 @@ import { WebGis, createUrlFromWebGisName } from '../store/modules/WebGis';
 import { ViewerResource } from '../store/modules/ResourceItem';
 import { ResourceCls } from '@nextgis/ngw-connector';
 
-
-import { namespace } from 'vuex-class';
 import { findResource } from '../store/modules/utils';
-export const { Action, Getter, State } = namespace('app');
+import { appModule } from '../store/modules/app';
 
 export interface TreeItem {
   id: number;
@@ -31,10 +29,6 @@ const clsIconAliases: { [key in ResourceCls]?: string } = {
 
 @Component
 export class MainPage extends Vue {
-  @State webGis?: WebGis;
-  @Action loadChildren!: (id: number) => Promise<ViewerResource[]>;
-  @Action setWebGis!: (webGis?: WebGis) => any;
-
   active: string[] = [];
 
   open: string[] = [];
@@ -44,6 +38,10 @@ export class MainPage extends Vue {
   drawer = null;
 
   query: any = null;
+
+  loadChildren = appModule.loadChildren;
+
+  get webGis() { return appModule.webGis; }
 
   get items(): TreeItem[] {
     let resources: ViewerResource[] = [];
@@ -84,14 +82,14 @@ export class MainPage extends Vue {
 
   async login(webGis: WebGis) {
     try {
-      await this.setWebGis(webGis);
+      await appModule.setWebGis(webGis);
     } catch (er) {
       this.$router.push('/login');
     }
   }
 
   logout() {
-    this.setWebGis();
+    appModule.setWebGis();
   }
 
   @Watch('search')

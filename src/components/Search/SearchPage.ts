@@ -1,14 +1,9 @@
 import { Vue, Component } from 'vue-property-decorator';
-
-import { State } from 'vuex-class';
-
-import { WebGis } from 'src/store/modules/WebGis';
-
-const namespace: string = 'app';
+import { appModule } from '../../store/modules/app';
 
 @Component
 export class SearchPage extends Vue {
-  @State('webGis', { namespace }) webGis?: WebGis;
+  get webGis() { return appModule.webGis; }
 
   mounted() {
     console.log('search page');
