@@ -1,5 +1,6 @@
 import Vuex from 'vuex';
 import { DefineActions, DefineGetters, DefineMutations } from 'vuex-type-helper';
+import { VuexModule, Module } from 'vuex-module-decorators';
 import { WebGis } from './WebGis';
 import router from '../../routers';
 import { ViewerResource } from './ResourceItem';
@@ -115,10 +116,15 @@ export const {
 } = Vuex.createNamespacedHelpers<State, Getters, Mutations, Actions>('app');
 
 
-export default {
-  namespaced: true,
-  state: _state,
-  getters: _getters,
-  mutations: _mutations,
-  actions: _actions
-};
+// export default {
+//   namespaced: true,
+//   state: _state,
+//   getters: _getters,
+//   mutations: _mutations,
+//   actions: _actions
+// };
+
+@Module
+export default class App extends VuexModule {
+
+}
