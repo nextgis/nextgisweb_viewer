@@ -38,7 +38,23 @@ export class ResourcePage extends Vue {
         target: 'map',
         bounds: [0, -90, 180, 90],
         qmsId: [487, 'baselayer'],
-        connector: this.webGis.connector,
+        connector: this.webGis.connector
+      });
+      this.ngwMap.emitter.on('layer:click', (e) => {
+        if (this.vectorLayerId && this.ngwMap) {
+          const vectorLayer = this.ngwMap.getLayer(this.vectorLayerId) as VectorLayerAdapter;
+
+          if (vectorLayer.getSelected && e.layer.id === vectorLayer.id) {
+            const selected = vectorLayer.getSelected();
+            const features: Feature[] = [];
+            selected.forEach((x) => {
+              if (x.feature) {
+                features.push(x.feature);
+              }
+            });
+            this._setSelected(features);
+          }
+        }
       });
       this.isLoading = true;
 
@@ -88,18 +104,7 @@ export class ResourcePage extends Vue {
       if (layer && 'getSelected' in layer) {
         const vectorLayer = layer as VectorLayerAdapter;
         this.vectorLayerId = this.ngwMap.getLayerId(layer);
-        this.ngwMap.emitter.on('layer:click', (e) => {
-          if (vectorLayer.getSelected && e.layer.id === vectorLayer.id) {
-            const selected = vectorLayer.getSelected();
-            const features: Feature[] = [];
-            selected.forEach((x) => {
-              if (x.feature) {
-                features.push(x.feature);
-              }
-            });
-            this._setSelected(features);
-          }
-        });
+
         const feature = this.$router.currentRoute.query.feature;
         if (feature && vectorLayer.select) {
           vectorLayer.select((x) => {
