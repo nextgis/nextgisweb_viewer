@@ -28,7 +28,6 @@
     "vuex-module-decorators": "^0.9.9"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.129",
     "clean-webpack-plugin": "^2.0.2",
     "compression-webpack-plugin": "^2.0.0",
     "css-loader": "^2.1.1",
