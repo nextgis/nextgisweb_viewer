@@ -25,7 +25,8 @@
     "vue-router": "^3.0.6",
     "vuetify": "^1.5.14",
     "vuex": "^3.1.1",
-    "vuex-module-decorators": "^0.9.9"
+    "vuex-module-decorators": "^0.9.9",
+    "wellknown": "^0.5.0"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^2.0.2",
@@ -38,7 +39,7 @@
     "sass-loader": "^7.1.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
-    "ts-loader": "^6.0.0",
+    "ts-loader": "^6.0.1",
     "tslint": "^5.16.0",
     "tslint-loader": "^3.6.0",
     "tslint-webpack-plugin": "^2.0.4",
@@ -47,7 +48,7 @@
     "vue-style-loader": "^4.1.2",
     "vue-template-compiler": "^2.6.10",
     "vuetify-loader": "^1.2.2",
-    "webpack": "^4.31.0",
+    "webpack": "^4.32.2",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^3.3.2",
     "webpack-dev-server": "^3.4.1"

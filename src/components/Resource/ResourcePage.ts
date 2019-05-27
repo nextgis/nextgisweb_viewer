@@ -7,16 +7,29 @@ import MapAdapter from '@nextgis/leaflet-map-adapter';
 import 'leaflet/dist/leaflet.css';
 
 import { ViewerResource } from '../../store/modules/ResourceItem';
-import { Feature } from 'geojson';
 import { Route } from 'vue-router';
 
 import { appModule } from '../../store/modules/app';
+import { parse } from 'wellknown';
+
+interface FeatureToSelect {
+  id: number;
+  layer?: number;
+  geom?: boolean;
+}
+
+const _highlightId = 'highlight-tmp';
+
+const paint = { fillOpacity: 0.5, stroke: true };
+const selectedPaint = { fillOpacity: 0.8, stroke: true, radius: 10 };
 
 @Component
 export class ResourcePage extends Vue {
   ngwMap?: NgwMap;
 
   resource?: ViewerResource;
+
+  selectedResourceId: number;
 
   isLoading = true;
   // activeTab: 'fields' | 'attachment' | 'description' = 'fields';
@@ -46,15 +59,32 @@ export class ResourcePage extends Vue {
 
           if (vectorLayer.getSelected && e.layer.id === vectorLayer.id) {
             const selected = vectorLayer.getSelected();
-            const features: Feature[] = [];
+            const features: FeatureToSelect[] = [];
             selected.forEach((x) => {
-              if (x.feature) {
-                features.push(x.feature);
+              if (x.feature && x.feature.id) {
+                features.push({ id: Number(x.feature.id) });
               }
             });
             this._setSelected(features);
           }
         }
+      });
+      this.ngwMap.emitter.on('ngw:select', (resp) => {
+        const features: FeatureToSelect[] = [];
+        for (const layer in resp) {
+          if (resp.hasOwnProperty(layer)) {
+            if (layer !== 'featureCount') {
+              resp[layer].features.forEach((x) => {
+                features.push({
+                  id: x.id,
+                  layer: Number(layer),
+                  geom: false
+                });
+              });
+            }
+          }
+        }
+        this._setSelected(features);
       });
       this.isLoading = true;
 
@@ -95,8 +125,8 @@ export class ResourcePage extends Vue {
       const layer = await this.ngwMap.addNgwLayer({
         resourceId: resource.id,
         adapterOptions: {
-          paint: { fillOpacity: 0.5, stroke: true },
-          selectedPaint: { fillOpacity: 0.8, stroke: true, radius: 10 },
+          paint,
+          selectedPaint,
           selectable: true,
         }
       });
@@ -140,32 +170,47 @@ export class ResourcePage extends Vue {
     this._setSelected([]);
   }
 
-  private async _setSelected(features: Feature[]) {
-    const feature = features[0];
-    const resourceId = this.resource && this.resource.id;
-    const connector = this.webGis && this.webGis.connector;
-    if (this.getFeaturePromise) {
-      // this.getFeaturePromise;
-    }
-    if (feature && connector && resourceId) {
-      // @ts-ignore
-      const fid: number = feature.id;
-      this.getFeaturePromise = undefined;
-      this.getFeaturePromise = connector.get('feature_layer.feature.item', null, {
-        id: resourceId,
-        fid
-      });
-      const selected = await this.getFeaturePromise;
-      this.selectedFeature = selected;
+  private async _setSelected(features: FeatureToSelect[]) {
 
-    } else {
-      this.selectedFeature = undefined;
+    if (this.ngwMap && features && features.length) {
+      this.ngwMap.removeLayer(_highlightId);
 
+      const feature = features[0];
+      const resourceId = feature.layer || (this.resource && this.resource.id);
+      const connector = this.webGis && this.webGis.connector;
+      if (this.getFeaturePromise) {
+        this.getFeaturePromise = undefined;
+      }
+      if (feature && connector && resourceId) {
+        this.selectedResourceId = resourceId;
+        const fid: number = feature.id;
+        this.getFeaturePromise = undefined;
+        this.getFeaturePromise = connector.get('feature_layer.feature.item', null, {
+          id: resourceId,
+          fid
+        });
+        const selected = await this.getFeaturePromise;
+        this.selectedFeature = selected;
+
+        if (!feature.geom) {
+          const geojson = this._wktToGeoJson(selected.geom);
+          this.ngwMap.addLayer('GEOJSON', {
+            id: _highlightId,
+            data: geojson,
+            visibility: true,
+            paint
+          });
+        }
+
+      } else {
+        this.selectedFeature = undefined;
+
+      }
+      if (this.ngwMap) {
+        this.ngwMap.mapAdapter.map.invalidateSize();
+      }
+      this._updateQuery();
     }
-    if (this.ngwMap) {
-      this.ngwMap.mapAdapter.map.invalidateSize();
-    }
-    this._updateQuery();
   }
 
   private _updateQuery() {
@@ -178,4 +223,16 @@ export class ResourcePage extends Vue {
     }
     this.$router.push({ query });
   }
+
+  private _wktToGeoJson(geom: string) {
+    const geojson = parse(geom);
+    // let str = geom;
+    // str = str.replace(/(\d+.\d+) (\d+.\d+)/g, '[$1, $2]')
+    // str = str.replace('MULTIPOLYGON ', '');
+    // str = str.substring(0, str.length - 1);
+    // str = str.replace(/\(/g, '[');
+    // str = str.replace(/\)/g, ']');
+    return NgwMap.toWgs84(geojson);
+  }
+
 }

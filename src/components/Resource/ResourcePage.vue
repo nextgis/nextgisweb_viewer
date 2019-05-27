@@ -37,8 +37,8 @@
                 <v-flex v-for="a in selectedFeature.extensions.attachment" :key="a.id" xs4 d-flex>
                   <v-card flat tile class="d-flex">
                     <v-img
-                      :src="`${webGis.url}/api/resource/${resource.id}/feature/${selectedFeature.id}/attachment/${a.id}/image?size=300x300`"
-                      :lazy-src="`${webGis.url}/api/resource/${resource.id}/feature/${selectedFeature.id}/attachment/${a.id}/image`"
+                      :src="`${webGis.url}/api/resource/${selectedResourceId}/feature/${selectedFeature.id}/attachment/${a.id}/image?size=300x300`"
+                      :lazy-src="`${webGis.url}/api/resource/${selectedResourceId}/feature/${selectedFeature.id}/attachment/${a.id}/image`"
                       aspect-ratio="1"
                       class="grey lighten-2"
                     >
