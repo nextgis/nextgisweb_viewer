@@ -10,6 +10,7 @@ import { ViewerResource } from '../../store/modules/ResourceItem';
 import { Route } from 'vue-router';
 
 import { appModule } from '../../store/modules/app';
+// @ts-ignore
 import { parse } from 'wellknown';
 
 interface FeatureToSelect {
@@ -29,7 +30,7 @@ export class ResourcePage extends Vue {
 
   resource?: ViewerResource;
 
-  selectedResourceId: number;
+  selectedResourceId?: number;
 
   isLoading = true;
   // activeTab: 'fields' | 'attachment' | 'description' = 'fields';
