@@ -74,13 +74,17 @@ export class ResourcePage extends Vue {
         for (const layer in resp) {
           if (resp.hasOwnProperty(layer)) {
             if (layer !== 'featureCount') {
-              resp[layer].features.forEach((x) => {
-                features.push({
-                  id: x.id,
-                  layer: Number(layer),
-                  geom: false
+              const layerFeatures = resp[layer].features;
+              const layerId = Number(layer);
+              if (features && layerId !== undefined) {
+                layerFeatures.forEach((x) => {
+                  features.push({
+                    id: x.id,
+                    layer: layerId,
+                    geom: false
+                  });
                 });
-              });
+              }
             }
           }
         }
