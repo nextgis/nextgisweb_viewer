@@ -1,7 +1,7 @@
 import { Vue, Component, Watch } from 'vue-property-decorator';
 
-import NgwMap, { VectorLayerAdapter } from '@nextgis/ngw-map';
-import { CancelablePromise } from '@nextgis/ngw-connector';
+import NgwMap, { VectorLayerAdapter, LayerAdapter } from '@nextgis/ngw-map';
+import { CancelablePromise, FeatureItem } from '@nextgis/ngw-connector';
 
 import MapAdapter from '@nextgis/leaflet-map-adapter';
 import 'leaflet/dist/leaflet.css';
@@ -15,7 +15,8 @@ import { parse } from 'wellknown';
 
 interface FeatureToSelect {
   id: number;
-  layer?: number;
+  // layer?: LayerAdapter;
+  resourceId?: number;
   geom?: boolean;
 }
 
@@ -30,15 +31,19 @@ export class ResourcePage extends Vue {
 
   resource?: ViewerResource;
 
-  selectedResourceId?: number;
-
   isLoading = true;
   // activeTab: 'fields' | 'attachment' | 'description' = 'fields';
   activeTab = '0';
 
-  selectedFeature: any = null;
+  selectedResourceId?: number;
 
-  vectorLayerId: string | undefined = undefined;
+  featureToSelectModel!: FeatureToSelect;
+
+  selectedFeatures: FeatureToSelect[] = [];
+
+  selectedFeature: FeatureItem | false = false;
+
+  ngwLayerId: string | undefined = undefined;
 
   getFeaturePromise?: CancelablePromise<any>;
 
@@ -55,8 +60,8 @@ export class ResourcePage extends Vue {
         connector: this.webGis.connector
       });
       this.ngwMap.emitter.on('layer:click', (e) => {
-        if (this.vectorLayerId && this.ngwMap) {
-          const vectorLayer = this.ngwMap.getLayer(this.vectorLayerId) as VectorLayerAdapter;
+        if (this.ngwLayerId && this.ngwMap) {
+          const vectorLayer = this.ngwMap.getLayer(this.ngwLayerId) as VectorLayerAdapter;
 
           if (vectorLayer.getSelected && e.layer.id === vectorLayer.id) {
             const selected = vectorLayer.getSelected();
@@ -72,24 +77,28 @@ export class ResourcePage extends Vue {
       });
       this.ngwMap.emitter.on('ngw:select', (resp) => {
         const features: FeatureToSelect[] = [];
-        for (const layer in resp) {
-          if (resp.hasOwnProperty(layer)) {
-            if (layer !== 'featureCount') {
-              const layerFeatures = resp[layer].features;
-              const layerId = Number(layer);
-              if (features && layerId !== undefined) {
-                layerFeatures.forEach((x) => {
-                  features.push({
-                    id: x.id,
-                    layer: layerId,
-                    geom: false
+        if (this.ngwMap) {
+          for (const l in resp) {
+            if (resp.hasOwnProperty(l)) {
+              if (l !== 'featureCount') {
+                const layerFeatures = resp[l].features;
+                const resourceId = Number(l);
+                const layer = this.ngwMap.getNgwLayerByResourceId(resourceId);
+                if (features && layer) {
+                  layerFeatures.forEach((x) => {
+                    features.push({
+                      id: x.id,
+                      // layer,
+                      resourceId,
+                      geom: false
+                    });
                   });
-                });
+                }
               }
             }
           }
+          this._setSelected(features);
         }
-        this._setSelected(features);
       });
       this.isLoading = true;
 
@@ -107,7 +116,7 @@ export class ResourcePage extends Vue {
     const resourceId = params && params.resource;
     const tab = currentRoute.query.tab as string;
     this.activeTab = tab || this.activeTab;
-    this.selectedFeature = null;
+    this.selectedFeature = false;
 
     if (resourceId) {
       const resource = appModule.resourceById(Number(resourceId));
@@ -120,6 +129,15 @@ export class ResourcePage extends Vue {
   @Watch('activeTab')
   onTabChange() {
     this._updateQuery();
+  }
+
+  @Watch('featureToSelectModel')
+  onFeatureToSelectModelChange(feature: FeatureToSelect) {
+    this._setSelectFeature(feature);
+  }
+
+  getSelectedItemText(feature: FeatureToSelect) {
+    return feature.id;
   }
 
   async showLayer() {
@@ -138,17 +156,16 @@ export class ResourcePage extends Vue {
 
       if (layer && 'getSelected' in layer) {
         const vectorLayer = layer as VectorLayerAdapter;
-        this.vectorLayerId = this.ngwMap.getLayerId(layer);
+        this.ngwLayerId = this.ngwMap.getLayerId(layer);
 
         const feature = this.$router.currentRoute.query.feature;
         if (feature && vectorLayer.select) {
+          const featureId = Number(feature);
           vectorLayer.select((x) => {
-            // @ts-ignore
-            return x.feature.id === Number(feature);
+            return !!(x && x.feature && x.feature.id === featureId);
           });
           this._setSelected([{
-            // @ts-ignore
-            id: feature
+            id: featureId
           }]);
         }
       }
@@ -169,27 +186,37 @@ export class ResourcePage extends Vue {
 
   cleanSelected() {
     const ngwMap = this.ngwMap;
-    if (ngwMap && this.vectorLayerId) {
-      ngwMap.unSelectLayer(this.vectorLayerId);
+    if (ngwMap && this.ngwLayerId) {
+      ngwMap.unSelectLayer(this.ngwLayerId);
     }
     this._setSelected([]);
   }
 
   private async _setSelected(features: FeatureToSelect[]) {
+    if (features && features.length) {
+      const feature = features[0];
+      this.selectedFeatures = features;
+      if (feature) {
+        this._setSelectFeature(feature);
+      }
+    }
+  }
 
-    if (this.ngwMap && features && features.length) {
+  private async _setSelectFeature(feature: FeatureToSelect) {
+    if (this.ngwMap) {
+      if (this.featureToSelectModel !== feature) {
+        this.featureToSelectModel = feature;
+      }
       this.ngwMap.removeLayer(_highlightId);
 
-      const feature = features[0];
-      const resourceId = feature.layer || (this.resource && this.resource.id);
+      const resourceId = feature.resourceId || (this.resource && this.resource.id);
       const connector = this.webGis && this.webGis.connector;
       if (this.getFeaturePromise) {
-        this.getFeaturePromise = undefined;
+        this.getFeaturePromise.cancel();
       }
       if (feature && connector && resourceId) {
         this.selectedResourceId = resourceId;
         const fid: number = feature.id;
-        this.getFeaturePromise = undefined;
         this.getFeaturePromise = connector.get('feature_layer.feature.item', null, {
           id: resourceId,
           fid
@@ -208,10 +235,10 @@ export class ResourcePage extends Vue {
         }
 
       } else {
-        this.selectedFeature = undefined;
-
+        this.selectedFeature = false;
       }
       if (this.ngwMap) {
+        // TODO: test for other map frameworks
         this.ngwMap.mapAdapter.map.invalidateSize();
       }
       this._updateQuery();
@@ -231,12 +258,6 @@ export class ResourcePage extends Vue {
 
   private _wktToGeoJson(geom: string) {
     const geojson = parse(geom);
-    // let str = geom;
-    // str = str.replace(/(\d+.\d+) (\d+.\d+)/g, '[$1, $2]')
-    // str = str.replace('MULTIPOLYGON ', '');
-    // str = str.substring(0, str.length - 1);
-    // str = str.replace(/\(/g, '[');
-    // str = str.replace(/\)/g, ']');
     return NgwMap.toWgs84(geojson);
   }
 
