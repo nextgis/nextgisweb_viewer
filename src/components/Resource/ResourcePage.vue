@@ -6,8 +6,8 @@
       </v-flex>
       <v-flex class="attribution-container" v-if="selectedFeature" xs12 sm6 md4>
         <v-list dense>
-          <v-list-tile @click.stop="cleanSelected">
-            <v-list-tile-action>
+          <v-list-tile>
+            <v-list-tile-action @click.stop="cleanSelected">
               <v-icon>mdi-close</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
@@ -22,17 +22,18 @@
                 v-if="selectedFeatures.length > 1"
                 v-model="featureToSelectModel"
                 :items="selectedFeatures"
+                @change="onSelectionChange"
               >
                 <template slot="item" slot-scope="data">
                   <v-list-tile-content>
                     <v-list-tile-title>Feature#{{data.item.id}}</v-list-tile-title>
-                    <v-list-tile-sub-title v-if="data.item.layer && data.item.layer.options">{{data.item.layer.options.display_name}}</v-list-tile-sub-title>
+                    <v-list-tile-sub-title v-if="data.item.layer">{{data.item.layer}}</v-list-tile-sub-title>
                   </v-list-tile-content>
                 </template>
                 <template slot="selection" slot-scope="data">
                   <v-list-tile-content>
                     <v-list-tile-title>Feature#{{data.item.id}}</v-list-tile-title>
-                    <v-list-tile-sub-title v-if="data.item.layer && data.item.layer.options">{{data.item.layer.options.display_name}}</v-list-tile-sub-title>
+                    <v-list-tile-sub-title v-if="data.item.layer">{{data.item.layer}}</v-list-tile-sub-title>
                   </v-list-tile-content>
                 </template>
               </v-select>

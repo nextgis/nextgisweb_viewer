@@ -12,10 +12,12 @@ import { Route } from 'vue-router';
 import { appModule } from '../../store/modules/app';
 // @ts-ignore
 import { parse } from 'wellknown';
+import { WebMapLayerAdapter } from 'nextgisweb_frontend/packages/ngw-kit/src';
 
 interface FeatureToSelect {
   id: number;
   // layer?: LayerAdapter;
+  layer?: string;
   resourceId?: number;
   geom?: boolean;
 }
@@ -83,12 +85,12 @@ export class ResourcePage extends Vue {
               if (l !== 'featureCount') {
                 const layerFeatures = resp[l].features;
                 const resourceId = Number(l);
-                const layer = this.ngwMap.getNgwLayerByResourceId(resourceId);
+                const layer = this.ngwMap.getNgwLayerByResourceId(resourceId) as WebMapLayerAdapter;
                 if (features && layer) {
                   layerFeatures.forEach((x) => {
                     features.push({
                       id: x.id,
-                      // layer,
+                      layer: layer.layer && layer.options.display_name,
                       resourceId,
                       geom: false
                     });
@@ -129,11 +131,6 @@ export class ResourcePage extends Vue {
   @Watch('activeTab')
   onTabChange() {
     this._updateQuery();
-  }
-
-  @Watch('featureToSelectModel')
-  onFeatureToSelectModelChange(feature: FeatureToSelect) {
-    this._setSelectFeature(feature);
   }
 
   getSelectedItemText(feature: FeatureToSelect) {
@@ -192,14 +189,16 @@ export class ResourcePage extends Vue {
     this._setSelected([]);
   }
 
-  private async _setSelected(features: FeatureToSelect[]) {
-    if (features && features.length) {
-      const feature = features[0];
-      this.selectedFeatures = features;
-      if (feature) {
-        this._setSelectFeature(feature);
-      }
+  onSelectionChange(feature?: FeatureToSelect) {
+    if (feature) {
+      this._setSelectFeature(feature);
     }
+  }
+
+  private async _setSelected(features: FeatureToSelect[]) {
+    const feature = features[0];
+    this.selectedFeatures = features;
+    this._setSelectFeature(feature);
   }
 
   private async _setSelectFeature(feature: FeatureToSelect) {
@@ -209,7 +208,7 @@ export class ResourcePage extends Vue {
       }
       this.ngwMap.removeLayer(_highlightId);
 
-      const resourceId = feature.resourceId || (this.resource && this.resource.id);
+      const resourceId = feature && feature.resourceId || (this.resource && this.resource.id);
       const connector = this.webGis && this.webGis.connector;
       if (this.getFeaturePromise) {
         this.getFeaturePromise.cancel();
