@@ -90,6 +90,7 @@ export class ResourcePage extends Vue {
                   layerFeatures.forEach((x) => {
                     features.push({
                       id: x.id,
+                      // @ts-ignore FIXME: need work with adapter options interface
                       layer: layer.layer && layer.options.display_name,
                       resourceId,
                       geom: false
