@@ -11,13 +11,6 @@
               <v-icon>mdi-close</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <!-- <v-select
-                v-if="selectedFeatures.length > 1"
-                :items="selectedFeatures"
-                item-text="getSelectedItemText"
-                item-value="id"
-                label="Standard"
-              ></v-select>-->
               <v-select
                 v-if="selectedFeatures.length > 1"
                 v-model="featureToSelectModel"

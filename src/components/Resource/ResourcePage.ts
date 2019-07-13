@@ -1,7 +1,7 @@
 import { Vue, Component, Watch } from 'vue-property-decorator';
 
-import NgwMap, { VectorLayerAdapter, LayerAdapter } from '@nextgis/ngw-map';
-import { CancelablePromise, FeatureItem } from '@nextgis/ngw-connector';
+import NgwMap, { VectorLayerAdapter } from '@nextgis/ngw-map';
+import { CancelablePromise, FeatureItem, FeatureLayersIdentify } from '@nextgis/ngw-connector';
 
 import MapAdapter from '@nextgis/leaflet-map-adapter';
 import 'leaflet/dist/leaflet.css';
@@ -10,8 +10,7 @@ import { ViewerResource } from '../../store/modules/ResourceItem';
 import { Route } from 'vue-router';
 
 import { appModule } from '../../store/modules/app';
-// @ts-ignore
-import { parse } from 'wellknown';
+
 import { WebMapLayerAdapter } from 'nextgisweb_frontend/packages/ngw-kit/src';
 
 interface FeatureToSelect {
@@ -78,30 +77,7 @@ export class ResourcePage extends Vue {
         }
       });
       this.ngwMap.emitter.on('ngw:select', (resp) => {
-        const features: FeatureToSelect[] = [];
-        if (this.ngwMap) {
-          for (const l in resp) {
-            if (resp.hasOwnProperty(l)) {
-              if (l !== 'featureCount') {
-                const layerFeatures = resp[l].features;
-                const resourceId = Number(l);
-                const layer = this.ngwMap.getNgwLayerByResourceId(resourceId) as WebMapLayerAdapter;
-                if (features && layer) {
-                  layerFeatures.forEach((x) => {
-                    features.push({
-                      id: x.id,
-                      // @ts-ignore FIXME: need work with adapter options interface
-                      layer: layer.layer && layer.options.display_name,
-                      resourceId,
-                      geom: false
-                    });
-                  });
-                }
-              }
-            }
-          }
-          this._setSelected(features);
-        }
+        this._onSelect(resp);
       });
       this.isLoading = true;
 
@@ -142,7 +118,10 @@ export class ResourcePage extends Vue {
     const resource = this.resource;
     if (resource && this.ngwMap) {
       this.isLoading = true;
-      this.ngwMap.removeOverlays();
+      if (resource.cls !== 'basemap_layer') {
+        this.ngwMap.removeOverlays();
+      }
+
       const layer = await this.ngwMap.addNgwLayer({
         resourceId: resource.id,
         adapterOptions: {
@@ -167,18 +146,21 @@ export class ResourcePage extends Vue {
           }]);
         }
       }
-
       if (layer) {
-        if (layer.getExtent) {
-          const extent = await layer.getExtent();
-          if (extent) {
-            this.ngwMap.fitBounds(extent);
-          }
+        if (resource.cls === 'basemap_layer') {
+          this.ngwMap.showLayer(layer);
         } else {
-          this.ngwMap.zoomToLayer(layer);
+          if (layer.getExtent) {
+            const extent = await layer.getExtent();
+            if (extent) {
+              this.ngwMap.fitBounds(extent);
+            }
+          } else {
+            this.ngwMap.zoomToLayer(layer);
+          }
         }
+        this.isLoading = false;
       }
-      this.isLoading = false;
     }
   }
 
@@ -193,6 +175,33 @@ export class ResourcePage extends Vue {
   onSelectionChange(feature?: FeatureToSelect) {
     if (feature) {
       this._setSelectFeature(feature);
+    }
+  }
+
+  private async _onSelect(identify: FeatureLayersIdentify) {
+    const features: FeatureToSelect[] = [];
+    if (this.ngwMap) {
+      for (const l in identify) {
+        if (identify.hasOwnProperty(l)) {
+          if (l !== 'featureCount') {
+            const layerFeatures = identify[l].features;
+            const resourceId = Number(l);
+            const layer = await this.ngwMap.getNgwLayerByResourceId(resourceId) as WebMapLayerAdapter;
+            if (features && layer) {
+              layerFeatures.forEach((x) => {
+                features.push({
+                  id: x.id,
+                  // @ts-ignore FIXME: need work with adapter options interface
+                  layer: layer.layer && layer.options.display_name,
+                  resourceId,
+                  geom: false
+                });
+              });
+            }
+          }
+        }
+      }
+      this._setSelected(features);
     }
   }
 
@@ -219,13 +228,15 @@ export class ResourcePage extends Vue {
         const fid: number = feature.id;
         this.getFeaturePromise = connector.get('feature_layer.feature.item', null, {
           id: resourceId,
-          fid
+          fid,
+          srs: 4326,
+          geom_format: 'geojson'
         });
         const selected = await this.getFeaturePromise;
         this.selectedFeature = selected;
 
         if (!feature.geom) {
-          const geojson = this._wktToGeoJson(selected.geom);
+          const geojson = selected.geom;
           this.ngwMap.addLayer('GEOJSON', {
             id: _highlightId,
             data: geojson,
@@ -253,12 +264,8 @@ export class ResourcePage extends Vue {
     if (this.activeTab) {
       query.tab = this.activeTab;
     }
-    this.$router.push({ query });
+    // this.$router.push({ query });
   }
 
-  private _wktToGeoJson(geom: string) {
-    const geojson = parse(geom);
-    return NgwMap.toWgs84(geojson);
-  }
 
 }
