@@ -1,9 +1,9 @@
 <template>
-  <v-content>
+
     <v-container>
       <p>Select any vector layer, style or webmap in the resource tree to see it on the map.</p>
     </v-container>
-  </v-content>
+
 </template>
 
 <script lang="ts">

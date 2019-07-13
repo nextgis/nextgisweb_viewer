@@ -1,5 +1,5 @@
 <template>
-  <v-content class="map-content">
+  <div class="map-content">
     <v-layout justify-center row fill-height wrap>
       <v-flex>
         <div id="map"></div>
@@ -84,7 +84,7 @@
         </div>
       </v-flex>
     </v-layout>
-  </v-content>
+  </div>
 </template>
 
 <script lang="ts">

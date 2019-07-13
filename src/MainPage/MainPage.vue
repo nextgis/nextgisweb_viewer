@@ -58,8 +58,10 @@
         </v-btn>
       </v-toolbar>
 
-
+      <v-content>
         <router-view v-if="webGis"></router-view>
+      </v-content>
+
 
     </v-app>
   </div>
