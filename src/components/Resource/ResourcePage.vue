@@ -1,10 +1,11 @@
 <template>
-  <div class="map-content">
-    <v-layout justify-center row fill-height wrap>
-      <v-flex>
-        <div id="map"></div>
-      </v-flex>
-      <v-flex class="attribution-container" v-if="selectedFeature" xs12 sm6 md4>
+  <div class="wrapper">
+    <div id="map"></div>
+
+
+
+    <v-navigation-drawer v-model="selectedFeature" right absolute hide-overlay >
+      <div class="attribution-container" v-if="selectedFeature">
         <v-list dense>
           <v-list-tile>
             <v-list-tile-action @click.stop="cleanSelected">
@@ -54,13 +55,13 @@
                 </v-card-text>
               </v-card>
             </v-tab-item>
+
             <v-tab-item v-if="selectedFeature.extensions.attachment && webGis">
               <v-layout row wrap>
-                <v-flex v-for="a in selectedFeature.extensions.attachment" :key="a.id" xs4 d-flex>
+                <v-flex v-for="a in selectedFeature.extensions.attachment" :key="a.id" xs6 d-flex>
                   <v-card flat tile class="d-flex">
                     <v-img
-                      :src="`${webGis.url}/api/resource/${selectedResourceId}/feature/${selectedFeature.id}/attachment/${a.id}/image?size=300x300`"
-                      :lazy-src="`${webGis.url}/api/resource/${selectedResourceId}/feature/${selectedFeature.id}/attachment/${a.id}/image`"
+                      :src="a.src"
                       aspect-ratio="1"
                       class="grey lighten-2"
                     >
@@ -82,8 +83,11 @@
             </v-tab-item>
           </v-tabs>
         </div>
-      </v-flex>
-    </v-layout>
+      </div>
+    </v-navigation-drawer>
+
+
+
   </div>
 </template>
 
@@ -93,7 +97,7 @@ export { ResourcePage as default } from "./ResourcePage";
 
 
 <style lang="scss">
-#map {
+#map, .wrapper {
   width: 100%;
   height: 100%;
   z-index: 0;

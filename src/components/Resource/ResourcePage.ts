@@ -1,7 +1,7 @@
 import { Vue, Component, Watch } from 'vue-property-decorator';
 
 import NgwMap, { VectorLayerAdapter } from '@nextgis/ngw-map';
-import { CancelablePromise, FeatureItem, FeatureLayersIdentify } from '@nextgis/ngw-connector';
+import { CancelablePromise, FeatureItem, FeatureLayersIdentify, FeatureItemAttachment } from '@nextgis/ngw-connector';
 
 import MapAdapter from '@nextgis/leaflet-map-adapter';
 import 'leaflet/dist/leaflet.css';
@@ -12,6 +12,10 @@ import { Route } from 'vue-router';
 import { appModule } from '../../store/modules/app';
 
 import { WebMapLayerAdapter } from 'nextgisweb_frontend/packages/ngw-kit/src';
+
+interface FeatureImage extends FeatureItemAttachment {
+  src?: string | ArrayBuffer | null;
+}
 
 interface FeatureToSelect {
   id: number;
@@ -34,7 +38,7 @@ export class ResourcePage extends Vue {
 
   isLoading = true;
   // activeTab: 'fields' | 'attachment' | 'description' = 'fields';
-  activeTab = '0';
+  activeTab: number = 0;
 
   selectedResourceId?: number;
 
@@ -93,7 +97,7 @@ export class ResourcePage extends Vue {
     const currentRoute = this.$router.currentRoute;
     const params = currentRoute.params;
     const resourceId = params && params.resource;
-    const tab = currentRoute.query.tab as string;
+    const tab = Number(currentRoute.query.tab);
     this.activeTab = tab || this.activeTab;
     this.selectedFeature = false;
 
@@ -102,12 +106,12 @@ export class ResourcePage extends Vue {
       this.resource = resource;
       this.showLayer();
     }
-
   }
 
   @Watch('activeTab')
   onTabChange() {
     this._updateQuery();
+    this._loadAttachment();
   }
 
   getSelectedItemText(feature: FeatureToSelect) {
@@ -172,10 +176,22 @@ export class ResourcePage extends Vue {
     this._setSelected([]);
   }
 
-  onSelectionChange(feature?: FeatureToSelect) {
-    if (feature) {
-      this._setSelectFeature(feature);
+  async loadImage(img: FeatureImage, options: { width?: number, height?: number } = {}) {
+
+    if (!img.src && this.selectedFeature && this.ngwMap) {
+      const { width, height } = options;
+      const url = '/api/resource/' +
+        this.selectedResourceId + '/feature/' + this.selectedFeature.id +
+        `/attachment/${img.id}/image` +
+        ((width && height) ? `?size=${width}x${height}` : '');
+      const blob = await this.ngwMap.connector.makeQuery(url, {}, { responseType: 'blob' });
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = () => {
+        Vue.set(img, 'src', reader.result);
+      };
     }
+    return img.src;
   }
 
   private async _onSelect(identify: FeatureLayersIdentify) {
@@ -202,6 +218,15 @@ export class ResourcePage extends Vue {
         }
       }
       this._setSelected(features);
+    }
+  }
+
+  private _loadAttachment() {
+    const attachment = this.selectedFeature && this.selectedFeature.extensions.attachment;
+    if (this.activeTab === 1 && attachment) {
+      attachment.forEach((x) => {
+        this.loadImage(x, { width: 200, height: 200 });
+      });
     }
   }
 
@@ -252,6 +277,7 @@ export class ResourcePage extends Vue {
         // TODO: test for other map frameworks
         this.ngwMap.mapAdapter.map.invalidateSize();
       }
+      this._loadAttachment();
       this._updateQuery();
     }
   }
