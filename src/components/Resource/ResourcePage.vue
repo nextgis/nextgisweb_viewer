@@ -1,8 +1,6 @@
 <template>
-  <div class="wrapper">
+  <v-container class="wrapper pa-0 ma-0">
     <div id="map"></div>
-
-
 
     <v-navigation-drawer v-model="selectedFeature" right absolute hide-overlay >
       <div class="attribution-container" v-if="selectedFeature">
@@ -88,7 +86,7 @@
 
 
 
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -101,12 +99,6 @@ export { ResourcePage as default } from "./ResourcePage";
   width: 100%;
   height: 100%;
   z-index: 0;
-}
-
-.map-content {
-  height: 100%;
-  position: absolute;
-  width: 100%;
 }
 
 // .map-wrapper {

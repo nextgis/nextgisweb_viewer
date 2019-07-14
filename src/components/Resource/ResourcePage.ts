@@ -176,6 +176,12 @@ export class ResourcePage extends Vue {
     this._setSelected([]);
   }
 
+  onSelectionChange(feature?: FeatureToSelect) {
+    if (feature) {
+      this._setSelectFeature(feature);
+    }
+  }
+
   async loadImage(img: FeatureImage, options: { width?: number, height?: number } = {}) {
 
     if (!img.src && this.selectedFeature && this.ngwMap) {
